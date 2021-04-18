@@ -71,6 +71,19 @@ type (
 		Lock             string
 	}
 
+	// Exec represents an EXEC statement
+	Exec struct {
+		Await          bool
+		Comments       Comments
+		MethodName     TableName
+		ExecVarDefs    []ExecVarDef
+		OptExecPayload *ExecVarDef
+	}
+
+	Sleep struct {
+		Duration *SQLVal
+	}
+
 	// UnionSelect represents union type and select statement after first select statement.
 	UnionSelect struct {
 		Type      string
@@ -218,6 +231,7 @@ type (
 		ShowTablesOpt          *ShowTablesOpt
 		Scope                  string
 		ShowCollationFilterOpt Expr
+		Columns                Columns
 	}
 
 	// Use represents a use statement.
@@ -260,6 +274,24 @@ type (
 	// the full AST for the statement.
 	OtherRead struct{}
 
+	DescribeTable struct {
+		Full     string
+		Extended string
+		Table    TableName
+	}
+
+	Auth struct {
+		SessionAuth BoolVal
+		Provider    string
+		Type        string
+		KeyFilePath string
+	}
+
+	AuthRevoke struct {
+		SessionAuth BoolVal
+		Provider    string
+	}
+
 	// OtherAdmin represents a misc statement that relies on ADMIN privileges,
 	// such as REPAIR, OPTIMIZE, or TRUNCATE statement.
 	// It should be used only as an indicator. It does not contain
@@ -287,10 +319,15 @@ func (*Savepoint) iStatement()         {}
 func (*Release) iStatement()           {}
 func (*Explain) iStatement()           {}
 func (*OtherRead) iStatement()         {}
+func (*Auth) iStatement()              {}
+func (*AuthRevoke) iStatement()        {}
+func (*Exec) iStatement()              {}
+func (*DescribeTable) iStatement()     {}
 func (*OtherAdmin) iStatement()        {}
 func (*Select) iSelectStatement()      {}
 func (*Union) iSelectStatement()       {}
 func (*ParenSelect) iSelectStatement() {}
+func (*Sleep) iStatement()             {}
 
 // ParenSelect can actually not be a top level statement,
 // but we have to allow it because it's a requirement
@@ -527,7 +564,7 @@ type (
 	// This means two TableName vars can be compared for equality
 	// and a TableName can also be used as key in a map.
 	TableName struct {
-		Name, Qualifier TableIdent
+		Name, Qualifier, QualifierSecond, QualifierThird TableIdent
 	}
 
 	// Subquery represents a subquery.
@@ -541,6 +578,11 @@ func (*Subquery) iSimpleTableExpr() {}
 
 // TableNames is a list of TableName.
 type TableNames []TableName
+
+type ExecVarDef struct {
+	ColIdent ColIdent
+	Val      Expr
+}
 
 // JoinCondition represents the join conditions (either a ON or USING clause)
 // of a JoinTableExpr.
@@ -870,6 +912,10 @@ type TableIdent struct {
 	v string
 }
 
+func (node TableIdent) GetRawVal() string {
+	return node.v
+}
+
 // Here follow all the Format implementations for AST nodes
 
 // Format formats the node.
@@ -898,9 +944,28 @@ func (node *Select) Format(buf *TrackedBuffer) {
 		node.Limit, node.Lock)
 }
 
+func (node *Exec) Format(buf *TrackedBuffer) {
+	buf.astPrintf(node, "(%v)", node)
+}
+
 // Format formats the node.
 func (node *ParenSelect) Format(buf *TrackedBuffer) {
 	buf.astPrintf(node, "(%v)", node.Select)
+}
+
+// Format formats the node.
+func (node *Auth) Format(buf *TrackedBuffer) {
+	buf.astPrintf(node, "(%v)", node)
+}
+
+// Format formats the node.
+func (node *AuthRevoke) Format(buf *TrackedBuffer) {
+	buf.astPrintf(node, "(%v)", node)
+}
+
+// Format formats the node.
+func (node *Sleep) Format(buf *TrackedBuffer) {
+	buf.astPrintf(node, "(%v)", node)
 }
 
 // Format formats the node.
@@ -1372,6 +1437,11 @@ func (node *Explain) Format(buf *TrackedBuffer) {
 // Format formats the node.
 func (node *OtherRead) Format(buf *TrackedBuffer) {
 	buf.WriteString("otherread")
+}
+
+// Format formats the node.
+func (node *DescribeTable) Format(buf *TrackedBuffer) {
+	buf.WriteString("describetable")
 }
 
 // Format formats the node.

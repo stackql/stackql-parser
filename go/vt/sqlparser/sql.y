@@ -117,6 +117,9 @@ func skipToEnd(yylex interface{}) {
   vindexParams  []VindexParam
   showFilter    *ShowFilter
   optLike       *OptLike
+  execVarDef    ExecVarDef
+  execVarDefOpt *ExecVarDef
+  execVarDefs   []ExecVarDef
 }
 
 %token LEX_ERROR
@@ -217,6 +220,15 @@ func skipToEnd(yylex interface{}) {
 // Explain tokens
 %token <bytes> FORMAT TREE VITESS TRADITIONAL
 
+// Auth tokens
+%token <bytes> AUTH INTERACTIVE LOGIN REVOKE SA SERVICEACCOUNT SLEEP
+
+// Exec tokens
+%token <bytes> EXEC
+
+// infraql
+%token <bytes> INFRAQL
+
 %type <statement> command
 %type <selStmt> simple_select select_statement base_select union_rhs
 %type <statement> explain_statement explainable_statement
@@ -225,10 +237,13 @@ func skipToEnd(yylex interface{}) {
 %type <ddl> create_table_prefix rename_list
 %type <statement> analyze_statement show_statement use_statement other_statement
 %type <statement> begin_statement commit_statement rollback_statement savepoint_statement release_statement
+%type <statement> auth_statement exec_stmt sleep_stmt
+%type <boolVal> infraql_opt
 %type <bytes2> comment_opt comment_list
 %type <str> union_op insert_or_replace explain_format_opt wild_opt
 %type <bytes> explain_synonyms
 %type <str> distinct_opt cache_opt match_option separator_opt
+%type <str> auth_type
 %type <expr> like_escape_opt
 %type <selectExprs> select_expression_list select_expression_list_opt
 %type <selectExpr> select_expression
@@ -268,7 +283,7 @@ func skipToEnd(yylex interface{}) {
 %type <str> asc_desc_opt
 %type <limit> limit_opt
 %type <str> lock_opt
-%type <columns> ins_column_list column_list
+%type <columns> ins_column_list column_list opt_column_list
 %type <partitions> opt_partition_clause partition_list
 %type <updateExprs> on_dup_opt
 %type <updateExprs> update_list
@@ -324,9 +339,12 @@ func skipToEnd(yylex interface{}) {
 %type <partSpec> partition_operation
 %type <vindexParam> vindex_param
 %type <vindexParams> vindex_param_list vindex_params_opt
-%type <colIdent> id_or_var vindex_type vindex_type_opt
+%type <colIdent> id_or_var vindex_type vindex_type_opt at_id at_at_id
 %type <bytes> alter_object_type
 %type <ReferenceAction> fk_reference_action fk_on_delete fk_on_update
+%type <execVarDef> exec_var exec_payload
+%type <execVarDefOpt> opt_exec_payload
+%type <execVarDefs> exec_var_list
 
 %start any_command
 
@@ -370,6 +388,9 @@ command:
 | other_statement
 | flush_statement
 | do_statement
+| auth_statement
+| exec_stmt
+| sleep_stmt
 | /*empty*/
 {
   setParseTree(yylex, nil)
@@ -385,6 +406,18 @@ id_or_var:
     $$ = NewColIdentWithAt(string($1), SingleAt)
   }
 | AT_AT_ID
+  {
+    $$ = NewColIdentWithAt(string($1), DoubleAt)
+  }
+
+at_id:
+AT_ID
+  {
+    $$ = NewColIdentWithAt(string($1), SingleAt)
+  }
+
+at_at_id:
+AT_AT_ID
   {
     $$ = NewColIdentWithAt(string($1), DoubleAt)
   }
@@ -665,6 +698,51 @@ create_statement:
   {
     $$ = &DBDDL{Action: CreateStr, DBName: string($4.String())}
   }
+
+infraql_opt:
+  {
+    $$ = BoolVal(false)
+  }
+| INFRAQL
+  {
+    $$ = BoolVal(true)
+  }
+
+auth_statement:
+  infraql_opt AUTH LOGIN name_opt
+  {
+    $$ = &Auth{SessionAuth: $1, Provider: $4 }
+  }
+|
+  infraql_opt AUTH LOGIN name_opt auth_type
+  {
+    $$ = &Auth{SessionAuth: $1, Provider: $4, Type: $5  }
+  }
+|
+  infraql_opt AUTH LOGIN name_opt auth_type STRING
+  {
+    $$ = &Auth{SessionAuth: $1, Provider: $4, Type: $5, KeyFilePath: string($6)}
+  }
+|
+  infraql_opt AUTH REVOKE name_opt
+  {
+    $$ = &AuthRevoke{SessionAuth: $1, Provider: $4 }
+  }
+
+auth_type:
+  INTERACTIVE
+  {
+    $$ = InteractiveStr
+  }
+| SERVICEACCOUNT
+  {
+    $$ = ServiceAccountStr
+  }
+| SA
+  {
+    $$ = ServiceAccountStr
+  }
+
 
 vindex_type_opt:
   {
@@ -1171,6 +1249,12 @@ index_option:
 | COMMENT_KEYWORD STRING
   {
     $$ = &IndexOption{Name: string($1), Value: NewStrVal($2)}
+  }
+
+sleep_stmt:
+  SLEEP INTEGRAL
+  {
+    $$ = &Sleep{Duration: NewIntVal($2)}
   }
 
 equal_opt:
@@ -1703,6 +1787,11 @@ show_statement:
   {
     $$ = &Show{Type: string($2)}
   }
+| SHOW extended_opt id_or_var from_or_in table_name like_or_where_opt
+  {
+    showTablesOpt := &ShowTablesOpt{Filter: $6}
+    $$ = &Show{Extended: string($2), Type: string($3.String()), OnTable: $5, ShowTablesOpt: showTablesOpt}
+  }
 /*
  * Catch-all for show statements without vitess keywords:
  *
@@ -1712,10 +1801,22 @@ show_statement:
  *  SHOW VITESS_TABLETS
  *  SHOW VITESS_SHARDS
  *  SHOW VITESS_TARGET
+ *
+ *
  */
-| SHOW id_or_var ddl_skip_to_end
+| SHOW extended_opt id_or_var like_or_where_opt
   {
-    $$ = &Show{Type: string($2.String())}
+    showTablesOpt := &ShowTablesOpt{Filter: $4}
+    $$ = &Show{Extended: string($2), Type: string($3.String()), ShowTablesOpt: showTablesOpt}
+  }
+| SHOW AUTH name_opt
+  {
+    $$ = &Show{Type: string($2), Scope: $3}
+  }
+| SHOW INSERT into_table_name opt_column_list like_or_where_opt
+  {
+    showTablesOpt := &ShowTablesOpt{Filter: $5}
+    $$ = &Show{Type: string($2), OnTable: $3, ShowTablesOpt: showTablesOpt, Columns: $4}
   }
 
 tables_or_processlist:
@@ -1940,9 +2041,9 @@ wild_opt:
   }
   
 explain_statement:
-  explain_synonyms table_name wild_opt
+  explain_synonyms full_opt extended_opt table_name wild_opt
   {
-    $$ = &OtherRead{}
+    $$ = &DescribeTable{Full: string($2), Extended: string($3), Table: $4}
   }
 | explain_synonyms explain_format_opt explainable_statement
   {
@@ -2188,6 +2289,16 @@ table_name as_opt_id index_hint_list
     $$ = &AliasedTableExpr{Expr:$1, Partitions: $4, As: $6, Hints: $7}
   }
 
+opt_column_list:
+  {
+    $$ = nil
+  }
+| '(' column_list ')'
+  {
+    $$ = $2
+  }
+  
+
 column_list:
   sql_id
   {
@@ -2346,6 +2457,14 @@ table_name:
 | table_id '.' reserved_table_id
   {
     $$ = TableName{Qualifier: $1, Name: $3}
+  }
+| table_id '.' reserved_table_id '.' reserved_table_id
+  {
+    $$ = TableName{QualifierSecond: $1, Qualifier: $3, Name: $5}
+  }
+| table_id '.' reserved_table_id '.' reserved_table_id '.' reserved_table_id
+  {
+    $$ = TableName{QualifierThird: $1, QualifierSecond: $3, Qualifier: $5, Name: $7}
   }
 
 delete_table_name:
@@ -3466,6 +3585,46 @@ reserved_table_id:
     $$ = NewTableIdent(string($1))
   }
 
+exec_var:
+  at_id '=' value
+  {
+    $$ = NewExecVarDef($1, $3)
+  }
+
+exec_payload:
+  at_at_id '=' value
+  {
+    $$ = NewExecVarDef($1, $3)
+  }
+
+opt_exec_payload:
+  /*empty*/ 
+    { $$ = nil }
+  | exec_payload
+    {
+      rv := $1;
+      $$ = &rv
+    }
+
+exec_var_list:
+/*empty*/ { $$ = nil }
+| exec_var
+  {
+    $$ = []ExecVarDef{$1}
+  }
+| exec_var_list ',' exec_var
+  {
+    $$ = append($1, $3)
+  }
+
+
+exec_stmt:
+  EXEC comment_opt table_name exec_var_list opt_exec_payload
+  {
+    $$ = NewExec($2, $3, $4, $5)
+  }
+
+
 /*
   These are not all necessarily reserved in MySQL, but some are.
 
@@ -3608,6 +3767,7 @@ non_reserved_keyword:
 | ACTION
 | ACTIVE
 | ADMIN
+| AUTH
 | BEGIN
 | BIGINT
 | BIT
@@ -3638,6 +3798,7 @@ non_reserved_keyword:
 | ENGINES
 | ENUM
 | EXCLUDE
+| EXEC
 | EXPANSION
 | EXTENDED
 | FLOAT_TYPE
@@ -3654,8 +3815,10 @@ non_reserved_keyword:
 | HISTOGRAM
 | HISTORY
 | INACTIVE
+| INFRAQL
 | INT
 | INTEGER
+| INTERACTIVE
 | INVISIBLE
 | INDEXES
 | ISOLATION
@@ -3670,6 +3833,7 @@ non_reserved_keyword:
 | LOCKED
 | LONGBLOB
 | LONGTEXT
+| LOGIN
 | MASTER_COMPRESSION_ALGORITHMS
 | MASTER_PUBLIC_KEY_PATH
 | MASTER_TLS_CIPHERSUITES
@@ -3727,19 +3891,23 @@ non_reserved_keyword:
 | RESTART
 | RETAIN
 | REUSE
+| REVOKE
 | ROLE
 | ROLLBACK
+| SA
 | SECONDARY
 | SECONDARY_ENGINE
 | SECONDARY_LOAD
 | SECONDARY_UNLOAD
 | SEQUENCE
+| SERVICEACCOUNT
 | SESSION
 | SERIALIZABLE
 | SHARE
 | SIGNED
 | SKIP
 | SMALLINT
+| SLEEP
 | SPATIAL
 | SRID
 | START

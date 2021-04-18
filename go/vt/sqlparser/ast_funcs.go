@@ -508,6 +508,24 @@ func NewColIdent(str string) ColIdent {
 	}
 }
 
+// NewExec makes a new Exec.
+func NewExec(comments Comments, methodName TableName, execVarDefs []ExecVarDef, optExecPayload *ExecVarDef) *Exec {
+	return &Exec{
+		Comments:       comments,
+		MethodName:     methodName,
+		ExecVarDefs:    execVarDefs,
+		OptExecPayload: optExecPayload,
+	}
+}
+
+// NewExecVarDef makes a new ExecVarDef.
+func NewExecVarDef(colIdent ColIdent, val Expr) ExecVarDef {
+	return ExecVarDef{
+		ColIdent: colIdent,
+		Val:      val,
+	}
+}
+
 //NewSelect is used to create a select statement
 func NewSelect(comments Comments, exprs SelectExprs, selectOptions []string, from TableExprs, where *Where, groupBy GroupBy, having *Where) *Select {
 	var cache *bool
@@ -585,6 +603,10 @@ func (node ColIdent) Lowered() string {
 		node.lowered = strings.ToLower(node.val)
 	}
 	return node.lowered
+}
+
+func (node ColIdent) GetRawVal() string {
+	return node.val
 }
 
 // Equal performs a case-insensitive compare.

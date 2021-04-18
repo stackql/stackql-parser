@@ -185,7 +185,7 @@ func ExtractMysqlComment(sql string) (string, string) {
 	return version, innerSQL
 }
 
-const commentDirectivePreamble = "/*vt+"
+const commentDirectivePreamble = "/*+"
 
 // CommentDirectives is the parsed representation for execution directives
 // conveyed in query comments
@@ -206,7 +206,7 @@ func ExtractCommentDirectives(comments Comments) CommentDirectives {
 
 	for _, comment := range comments {
 		commentStr := string(comment)
-		if commentStr[0:5] != commentDirectivePreamble {
+		if commentStr[0:3] != commentDirectivePreamble {
 			continue
 		}
 

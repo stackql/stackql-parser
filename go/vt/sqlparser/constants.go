@@ -172,4 +172,8 @@ const (
 	VitessStr      = "vitess"
 	TraditionalStr = "traditional"
 	AnalyzeStr     = "analyze"
+
+	// Auth constants
+	InteractiveStr    = "interactive"
+	ServiceAccountStr = "serviceaccount"
 )

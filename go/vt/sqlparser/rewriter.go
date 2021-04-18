@@ -48,6 +48,14 @@ func replaceAndExprRight(newNode, parent SQLNode) {
 	parent.(*AndExpr).Right = newNode.(Expr)
 }
 
+func replaceAuthSessionAuth(newNode, parent SQLNode) {
+	parent.(*Auth).SessionAuth = newNode.(BoolVal)
+}
+
+func replaceAuthRevokeSessionAuth(newNode, parent SQLNode) {
+	parent.(*AuthRevoke).SessionAuth = newNode.(BoolVal)
+}
+
 func replaceAutoIncSpecColumn(newNode, parent SQLNode) {
 	parent.(*AutoIncSpec).Column = newNode.(ColIdent)
 }
@@ -256,6 +264,18 @@ func replaceDeleteTargets(newNode, parent SQLNode) {
 
 func replaceDeleteWhere(newNode, parent SQLNode) {
 	parent.(*Delete).Where = newNode.(*Where)
+}
+
+func replaceDescribeTableTable(newNode, parent SQLNode) {
+	parent.(*DescribeTable).Table = newNode.(TableName)
+}
+
+func replaceExecComments(newNode, parent SQLNode) {
+	parent.(*Exec).Comments = newNode.(Comments)
+}
+
+func replaceExecMethodName(newNode, parent SQLNode) {
+	parent.(*Exec).MethodName = newNode.(TableName)
 }
 
 func replaceExistsExprSubquery(newNode, parent SQLNode) {
@@ -609,6 +629,10 @@ func replaceSetTransactionComments(newNode, parent SQLNode) {
 	parent.(*SetTransaction).Comments = newNode.(Comments)
 }
 
+func replaceShowColumns(newNode, parent SQLNode) {
+	parent.(*Show).Columns = newNode.(Columns)
+}
+
 func replaceShowOnTable(newNode, parent SQLNode) {
 	parent.(*Show).OnTable = newNode.(TableName)
 }
@@ -623,6 +647,10 @@ func replaceShowTable(newNode, parent SQLNode) {
 
 func replaceShowFilterFilter(newNode, parent SQLNode) {
 	parent.(*ShowFilter).Filter = newNode.(Expr)
+}
+
+func replaceSleepDuration(newNode, parent SQLNode) {
+	parent.(*Sleep).Duration = newNode.(*SQLVal)
 }
 
 func replaceStarExprTableName(newNode, parent SQLNode) {
@@ -679,6 +707,16 @@ func replaceTableNameName(newNode, parent SQLNode) {
 func replaceTableNameQualifier(newNode, parent SQLNode) {
 	tmp := parent.(TableName)
 	tmp.Qualifier = newNode.(TableIdent)
+}
+
+func replaceTableNameQualifierSecond(newNode, parent SQLNode) {
+	tmp := parent.(TableName)
+	tmp.QualifierSecond = newNode.(TableIdent)
+}
+
+func replaceTableNameQualifierThird(newNode, parent SQLNode) {
+	tmp := parent.(TableName)
+	tmp.QualifierThird = newNode.(TableIdent)
 }
 
 type replaceTableNamesItems int
@@ -910,6 +948,12 @@ func (a *application) apply(parent, node SQLNode, replacer replacerFunc) {
 		a.apply(node, n.Left, replaceAndExprLeft)
 		a.apply(node, n.Right, replaceAndExprRight)
 
+	case *Auth:
+		a.apply(node, n.SessionAuth, replaceAuthSessionAuth)
+
+	case *AuthRevoke:
+		a.apply(node, n.SessionAuth, replaceAuthRevokeSessionAuth)
+
 	case *AutoIncSpec:
 		a.apply(node, n.Column, replaceAutoIncSpecColumn)
 		a.apply(node, n.Sequence, replaceAutoIncSpecSequence)
@@ -1018,6 +1062,13 @@ func (a *application) apply(parent, node SQLNode, replacer replacerFunc) {
 		a.apply(node, n.TableExprs, replaceDeleteTableExprs)
 		a.apply(node, n.Targets, replaceDeleteTargets)
 		a.apply(node, n.Where, replaceDeleteWhere)
+
+	case *DescribeTable:
+		a.apply(node, n.Table, replaceDescribeTableTable)
+
+	case *Exec:
+		a.apply(node, n.Comments, replaceExecComments)
+		a.apply(node, n.MethodName, replaceExecMethodName)
 
 	case *ExistsExpr:
 		a.apply(node, n.Subquery, replaceExistsExprSubquery)
@@ -1236,12 +1287,16 @@ func (a *application) apply(parent, node SQLNode, replacer replacerFunc) {
 		a.apply(node, n.Comments, replaceSetTransactionComments)
 
 	case *Show:
+		a.apply(node, n.Columns, replaceShowColumns)
 		a.apply(node, n.OnTable, replaceShowOnTable)
 		a.apply(node, n.ShowCollationFilterOpt, replaceShowShowCollationFilterOpt)
 		a.apply(node, n.Table, replaceShowTable)
 
 	case *ShowFilter:
 		a.apply(node, n.Filter, replaceShowFilterFilter)
+
+	case *Sleep:
+		a.apply(node, n.Duration, replaceSleepDuration)
 
 	case *StarExpr:
 		a.apply(node, n.TableName, replaceStarExprTableName)
@@ -1273,6 +1328,8 @@ func (a *application) apply(parent, node SQLNode, replacer replacerFunc) {
 	case TableName:
 		a.apply(node, n.Name, replaceTableNameName)
 		a.apply(node, n.Qualifier, replaceTableNameQualifier)
+		a.apply(node, n.QualifierSecond, replaceTableNameQualifierSecond)
+		a.apply(node, n.QualifierThird, replaceTableNameQualifierThird)
 
 	case TableNames:
 		replacer := replaceTableNamesItems(0)
