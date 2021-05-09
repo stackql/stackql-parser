@@ -633,6 +633,10 @@ func replaceShowColumns(newNode, parent SQLNode) {
 	parent.(*Show).Columns = newNode.(Columns)
 }
 
+func replaceShowComments(newNode, parent SQLNode) {
+	parent.(*Show).Comments = newNode.(Comments)
+}
+
 func replaceShowOnTable(newNode, parent SQLNode) {
 	parent.(*Show).OnTable = newNode.(TableName)
 }
@@ -1288,6 +1292,7 @@ func (a *application) apply(parent, node SQLNode, replacer replacerFunc) {
 
 	case *Show:
 		a.apply(node, n.Columns, replaceShowColumns)
+		a.apply(node, n.Comments, replaceShowComments)
 		a.apply(node, n.OnTable, replaceShowOnTable)
 		a.apply(node, n.ShowCollationFilterOpt, replaceShowShowCollationFilterOpt)
 		a.apply(node, n.Table, replaceShowTable)

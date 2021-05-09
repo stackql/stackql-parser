@@ -1813,10 +1813,11 @@ show_statement:
   {
     $$ = &Show{Type: string($2), Scope: $3}
   }
-| SHOW comment_opt INSERT into_table_name opt_column_list like_or_where_opt
+| SHOW INSERT comment_opt into_table_name opt_column_list like_or_where_opt
+
   {
-    showTablesOpt := &ShowTablesOpt{Filter: $5}
-    $$ = &Show{Type: string($2), OnTable: $3, ShowTablesOpt: showTablesOpt, Columns: $4}
+    showTablesOpt := &ShowTablesOpt{Filter: $6}
+    $$ = &Show{Comments: Comments($3), Type: string($2), OnTable: $4, ShowTablesOpt: showTablesOpt, Columns: $5}
   }
 
 tables_or_processlist:

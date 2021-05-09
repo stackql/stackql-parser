@@ -232,6 +232,7 @@ type (
 		Scope                  string
 		ShowCollationFilterOpt Expr
 		Columns                Columns
+		Comments               Comments
 	}
 
 	// Use represents a use statement.
