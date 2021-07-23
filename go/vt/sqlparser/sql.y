@@ -1192,19 +1192,19 @@ column_key_opt:
   }
 | PRIMARY KEY
   {
-    $$ = colKeyPrimary
+    $$ = ColKeyPrimary
   }
 | KEY
   {
-    $$ = colKey
+    $$ = ColKey
   }
 | UNIQUE KEY
   {
-    $$ = colKeyUniqueKey
+    $$ = ColKeyUniqueKey
   }
 | UNIQUE
   {
-    $$ = colKeyUnique
+    $$ = ColKeyUnique
   }
 
 column_comment_opt:

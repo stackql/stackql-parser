@@ -4892,25 +4892,25 @@ yydefault:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line sql.y:1194
 		{
-			yyVAL.colKeyOpt = colKeyPrimary
+			yyVAL.colKeyOpt = ColKeyPrimary
 		}
 	case 190:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line sql.y:1198
 		{
-			yyVAL.colKeyOpt = colKey
+			yyVAL.colKeyOpt = ColKey
 		}
 	case 191:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line sql.y:1202
 		{
-			yyVAL.colKeyOpt = colKeyUniqueKey
+			yyVAL.colKeyOpt = ColKeyUniqueKey
 		}
 	case 192:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line sql.y:1206
 		{
-			yyVAL.colKeyOpt = colKeyUnique
+			yyVAL.colKeyOpt = ColKeyUnique
 		}
 	case 193:
 		yyDollar = yyS[yypt-0 : yypt+1]

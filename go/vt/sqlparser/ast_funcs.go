@@ -99,11 +99,11 @@ type ColumnKeyOption int
 
 const (
 	colKeyNone ColumnKeyOption = iota
-	colKeyPrimary
-	colKeySpatialKey
-	colKeyUnique
-	colKeyUniqueKey
-	colKey
+	ColKeyPrimary
+	ColKeySpatialKey
+	ColKeyUnique
+	ColKeyUniqueKey
+	ColKey
 )
 
 // ReferenceAction indicates the action takes by a referential constraint e.g.
@@ -186,10 +186,10 @@ func (ct *ColumnType) DescribeType() string {
 
 	opts := make([]string, 0, 16)
 	if ct.Unsigned {
-		opts = append(opts, keywordStrings[UNSIGNED])
+		opts = append(opts, KeywordStrings[UNSIGNED])
 	}
 	if ct.Zerofill {
-		opts = append(opts, keywordStrings[ZEROFILL])
+		opts = append(opts, KeywordStrings[ZEROFILL])
 	}
 	if len(opts) != 0 {
 		buf.Myprintf(" %s", strings.Join(opts, " "))
@@ -200,96 +200,96 @@ func (ct *ColumnType) DescribeType() string {
 // SQLType returns the sqltypes type code for the given column
 func (ct *ColumnType) SQLType() querypb.Type {
 	switch strings.ToLower(ct.Type) {
-	case keywordStrings[TINYINT]:
+	case KeywordStrings[TINYINT]:
 		if ct.Unsigned {
 			return sqltypes.Uint8
 		}
 		return sqltypes.Int8
-	case keywordStrings[SMALLINT]:
+	case KeywordStrings[SMALLINT]:
 		if ct.Unsigned {
 			return sqltypes.Uint16
 		}
 		return sqltypes.Int16
-	case keywordStrings[MEDIUMINT]:
+	case KeywordStrings[MEDIUMINT]:
 		if ct.Unsigned {
 			return sqltypes.Uint24
 		}
 		return sqltypes.Int24
-	case keywordStrings[INT], keywordStrings[INTEGER]:
+	case KeywordStrings[INT], KeywordStrings[INTEGER]:
 		if ct.Unsigned {
 			return sqltypes.Uint32
 		}
 		return sqltypes.Int32
-	case keywordStrings[BIGINT]:
+	case KeywordStrings[BIGINT]:
 		if ct.Unsigned {
 			return sqltypes.Uint64
 		}
 		return sqltypes.Int64
-	case keywordStrings[BOOL], keywordStrings[BOOLEAN]:
+	case KeywordStrings[BOOL], KeywordStrings[BOOLEAN]:
 		return sqltypes.Uint8
-	case keywordStrings[TEXT]:
+	case KeywordStrings[TEXT]:
 		return sqltypes.Text
-	case keywordStrings[TINYTEXT]:
+	case KeywordStrings[TINYTEXT]:
 		return sqltypes.Text
-	case keywordStrings[MEDIUMTEXT]:
+	case KeywordStrings[MEDIUMTEXT]:
 		return sqltypes.Text
-	case keywordStrings[LONGTEXT]:
+	case KeywordStrings[LONGTEXT]:
 		return sqltypes.Text
-	case keywordStrings[BLOB]:
+	case KeywordStrings[BLOB]:
 		return sqltypes.Blob
-	case keywordStrings[TINYBLOB]:
+	case KeywordStrings[TINYBLOB]:
 		return sqltypes.Blob
-	case keywordStrings[MEDIUMBLOB]:
+	case KeywordStrings[MEDIUMBLOB]:
 		return sqltypes.Blob
-	case keywordStrings[LONGBLOB]:
+	case KeywordStrings[LONGBLOB]:
 		return sqltypes.Blob
-	case keywordStrings[CHAR]:
+	case KeywordStrings[CHAR]:
 		return sqltypes.Char
-	case keywordStrings[VARCHAR]:
+	case KeywordStrings[VARCHAR]:
 		return sqltypes.VarChar
-	case keywordStrings[BINARY]:
+	case KeywordStrings[BINARY]:
 		return sqltypes.Binary
-	case keywordStrings[VARBINARY]:
+	case KeywordStrings[VARBINARY]:
 		return sqltypes.VarBinary
-	case keywordStrings[DATE]:
+	case KeywordStrings[DATE]:
 		return sqltypes.Date
-	case keywordStrings[TIME]:
+	case KeywordStrings[TIME]:
 		return sqltypes.Time
-	case keywordStrings[DATETIME]:
+	case KeywordStrings[DATETIME]:
 		return sqltypes.Datetime
-	case keywordStrings[TIMESTAMP]:
+	case KeywordStrings[TIMESTAMP]:
 		return sqltypes.Timestamp
-	case keywordStrings[YEAR]:
+	case KeywordStrings[YEAR]:
 		return sqltypes.Year
-	case keywordStrings[FLOAT_TYPE]:
+	case KeywordStrings[FLOAT_TYPE]:
 		return sqltypes.Float32
-	case keywordStrings[DOUBLE]:
+	case KeywordStrings[DOUBLE]:
 		return sqltypes.Float64
-	case keywordStrings[DECIMAL]:
+	case KeywordStrings[DECIMAL]:
 		return sqltypes.Decimal
-	case keywordStrings[BIT]:
+	case KeywordStrings[BIT]:
 		return sqltypes.Bit
-	case keywordStrings[ENUM]:
+	case KeywordStrings[ENUM]:
 		return sqltypes.Enum
-	case keywordStrings[SET]:
+	case KeywordStrings[SET]:
 		return sqltypes.Set
-	case keywordStrings[JSON]:
+	case KeywordStrings[JSON]:
 		return sqltypes.TypeJSON
-	case keywordStrings[GEOMETRY]:
+	case KeywordStrings[GEOMETRY]:
 		return sqltypes.Geometry
-	case keywordStrings[POINT]:
+	case KeywordStrings[POINT]:
 		return sqltypes.Geometry
-	case keywordStrings[LINESTRING]:
+	case KeywordStrings[LINESTRING]:
 		return sqltypes.Geometry
-	case keywordStrings[POLYGON]:
+	case KeywordStrings[POLYGON]:
 		return sqltypes.Geometry
-	case keywordStrings[GEOMETRYCOLLECTION]:
+	case KeywordStrings[GEOMETRYCOLLECTION]:
 		return sqltypes.Geometry
-	case keywordStrings[MULTIPOINT]:
+	case KeywordStrings[MULTIPOINT]:
 		return sqltypes.Geometry
-	case keywordStrings[MULTILINESTRING]:
+	case KeywordStrings[MULTILINESTRING]:
 		return sqltypes.Geometry
-	case keywordStrings[MULTIPOLYGON]:
+	case KeywordStrings[MULTIPOLYGON]:
 		return sqltypes.Geometry
 	}
 	panic("unimplemented type " + ct.Type)
@@ -609,6 +609,10 @@ func (node ColIdent) GetRawVal() string {
 	return node.val
 }
 
+func (node ColIdent) GetAtCount() AtCount {
+	return node.at
+}
+
 // Equal performs a case-insensitive compare.
 func (node ColIdent) Equal(in ColIdent) bool {
 	return node.Lowered() == in.Lowered()
@@ -675,7 +679,11 @@ func (node *TableIdent) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-func containEscapableChars(s string, at AtCount) bool {
+func (node TableIdent) GetRawVal() string {
+	return node.v
+}
+
+func ContainEscapableChars(s string, at AtCount) bool {
 	isDbSystemVariable := at != NoAt
 
 	for i, c := range s {
@@ -696,15 +704,15 @@ func isKeyword(s string) bool {
 	return isKeyword
 }
 
-func formatID(buf *TrackedBuffer, original, lowered string, at AtCount) {
-	if containEscapableChars(original, at) || isKeyword(lowered) {
-		writeEscapedString(buf, original)
+func FormatID(buf *TrackedBuffer, original, lowered string, at AtCount) {
+	if ContainEscapableChars(original, at) || isKeyword(lowered) {
+		WriteEscapedString(buf, original)
 	} else {
 		buf.Myprintf("%s", original)
 	}
 }
 
-func writeEscapedString(buf *TrackedBuffer, original string) {
+func WriteEscapedString(buf *TrackedBuffer, original string) {
 	buf.WriteByte('`')
 	for _, c := range original {
 		buf.WriteRune(c)

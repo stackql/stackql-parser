@@ -65,6 +65,10 @@ func (buf *TrackedBuffer) Myprintf(format string, values ...interface{}) {
 	buf.astPrintf(nil, format, values...)
 }
 
+func (buf *TrackedBuffer) AstPrintf(currentNode SQLNode, format string, values ...interface{}) {
+	buf.astPrintf(currentNode, format, values...)
+}
+
 // astPrintf is for internal use by the ast structs
 func (buf *TrackedBuffer) astPrintf(currentNode SQLNode, format string, values ...interface{}) {
 	currentExpr, checkParens := currentNode.(Expr)

@@ -424,21 +424,21 @@ var keywords = map[string]int{
 	"zerofill":            ZEROFILL,
 }
 
-// keywordStrings contains the reverse mapping of token to keyword strings
-var keywordStrings = map[int]string{}
+// KeywordStrings contains the reverse mapping of token to keyword strings
+var KeywordStrings = map[int]string{}
 
 func init() {
 	for str, id := range keywords {
 		if id == UNUSED {
 			continue
 		}
-		keywordStrings[id] = strings.ToLower(str)
+		KeywordStrings[id] = strings.ToLower(str)
 	}
 }
 
 // KeywordString returns the string corresponding to the given keyword
 func KeywordString(id int) string {
-	str, ok := keywordStrings[id]
+	str, ok := KeywordStrings[id]
 	if !ok {
 		return ""
 	}
