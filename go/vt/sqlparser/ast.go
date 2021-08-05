@@ -957,7 +957,7 @@ func (node *Auth) Format(buf *TrackedBuffer) {
 	if node.SessionAuth {
 		infraql_opt = "infraql "
 	}
-	buf.astPrintf(node, "%sAUTH %v %s %v", infraql_opt, node.Provider, node.Type, node.KeyFilePath)
+	buf.astPrintf(node, "%sAUTH %s %s %s", infraql_opt, node.Provider, node.Type, node.KeyFilePath)
 }
 
 // Format formats the node.
@@ -966,7 +966,7 @@ func (node *AuthRevoke) Format(buf *TrackedBuffer) {
 	if node.SessionAuth {
 		infraql_opt = "infraql "
 	}
-	buf.astPrintf(node, "%sauth revoke %v", infraql_opt, node.Provider)
+	buf.astPrintf(node, "%sauth revoke %s", infraql_opt, node.Provider)
 }
 
 // Format formats the node.
