@@ -1813,11 +1813,11 @@ show_statement:
   {
     $$ = &Show{Type: string($2), Scope: $3}
   }
-| SHOW INSERT comment_opt into_table_name opt_column_list like_or_where_opt
+| SHOW extended_opt INSERT comment_opt into_table_name opt_column_list like_or_where_opt
 
   {
-    showTablesOpt := &ShowTablesOpt{Filter: $6}
-    $$ = &Show{Comments: Comments($3), Type: string($2), OnTable: $4, ShowTablesOpt: showTablesOpt, Columns: $5}
+    showTablesOpt := &ShowTablesOpt{Filter: $7}
+    $$ = &Show{Extended: string($2), Comments: Comments($4), Type: string($3), OnTable: $5, ShowTablesOpt: showTablesOpt, Columns: $6}
   }
 
 tables_or_processlist:
