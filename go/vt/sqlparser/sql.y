@@ -2275,7 +2275,8 @@ table_factor:
   }
 | openb exec_stmt closeb
   {
-    $$ = &AliasedTableExpr{Expr:$2.MethodName, As: ""}
+    exec := $2.(*Exec)
+    $$ = &AliasedTableExpr{Expr: exec.MethodName, As: NewTableIdent("")}
   }
 
 derived_table:
