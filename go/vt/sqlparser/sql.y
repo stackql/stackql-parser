@@ -2273,6 +2273,10 @@ table_factor:
   {
     $$ = &ParenTableExpr{Exprs: $2}
   }
+| openb exec_stmt closeb
+  {
+    $$ = &AliasedTableExpr{Expr:$2.MethodName, As: ""}
+  }
 
 derived_table:
   openb select_statement closeb
