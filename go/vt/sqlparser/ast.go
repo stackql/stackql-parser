@@ -552,6 +552,7 @@ type (
 func (*AliasedTableExpr) iTableExpr() {}
 func (*ParenTableExpr) iTableExpr()   {}
 func (*JoinTableExpr) iTableExpr()    {}
+func (*ExecSubquery) iTableExpr()     {}
 
 type (
 	// SimpleTableExpr represents a simple table expression.
@@ -573,10 +574,15 @@ type (
 	Subquery struct {
 		Select SelectStatement
 	}
+
+	ExecSubquery struct {
+		Exec *Exec
+	}
 )
 
-func (TableName) iSimpleTableExpr() {}
-func (*Subquery) iSimpleTableExpr() {}
+func (TableName) iSimpleTableExpr()     {}
+func (*Subquery) iSimpleTableExpr()     {}
+func (*ExecSubquery) iSimpleTableExpr() {}
 
 // TableNames is a list of TableName.
 type TableNames []TableName
@@ -944,6 +950,10 @@ func (node *Select) Format(buf *TrackedBuffer) {
 
 func (node *Exec) Format(buf *TrackedBuffer) {
 	buf.astPrintf(node, "exec %v %v", node.Comments, node.MethodName)
+}
+
+func (node *ExecSubquery) Format(buf *TrackedBuffer) {
+	buf.astPrintf(node, "( exec %v )", node.Exec)
 }
 
 // Format formats the node.

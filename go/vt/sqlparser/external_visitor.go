@@ -35,6 +35,7 @@ func (node *Default) Accept(vis SQLAstVisitor) error              { return vis.V
 func (node *Delete) Accept(vis SQLAstVisitor) error               { return vis.Visit(node) }
 func (node *DescribeTable) Accept(vis SQLAstVisitor) error        { return vis.Visit(node) }
 func (node *Exec) Accept(vis SQLAstVisitor) error                 { return vis.Visit(node) }
+func (node *ExecSubquery) Accept(vis SQLAstVisitor) error         { return vis.Visit(node) }
 func (node *ExistsExpr) Accept(vis SQLAstVisitor) error           { return vis.Visit(node) }
 func (node *Explain) Accept(vis SQLAstVisitor) error              { return vis.Visit(node) }
 func (node Exprs) Accept(vis SQLAstVisitor) error                 { return vis.Visit(node) }
