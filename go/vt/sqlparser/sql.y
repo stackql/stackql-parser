@@ -80,6 +80,7 @@ func skipToEnd(yylex interface{}) {
   values        Values
   valTuple      ValTuple
   subquery      *Subquery
+  execsubquery  *ExecSubquery
   whens         []*When
   when          *When
   orderBy       OrderBy
@@ -2272,6 +2273,11 @@ table_factor:
 | openb table_references closeb
   {
     $$ = &ParenTableExpr{Exprs: $2}
+  }
+| openb exec_stmt closeb
+  {
+    exec := $2.(*Exec)
+    $$ = &ExecSubquery{Exec: exec }
   }
 
 derived_table:

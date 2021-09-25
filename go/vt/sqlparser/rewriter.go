@@ -278,6 +278,10 @@ func replaceExecMethodName(newNode, parent SQLNode) {
 	parent.(*Exec).MethodName = newNode.(TableName)
 }
 
+func replaceExecSubqueryExec(newNode, parent SQLNode) {
+	parent.(*ExecSubquery).Exec = newNode.(*Exec)
+}
+
 func replaceExistsExprSubquery(newNode, parent SQLNode) {
 	parent.(*ExistsExpr).Subquery = newNode.(*Subquery)
 }
@@ -1073,6 +1077,9 @@ func (a *application) apply(parent, node SQLNode, replacer replacerFunc) {
 	case *Exec:
 		a.apply(node, n.Comments, replaceExecComments)
 		a.apply(node, n.MethodName, replaceExecMethodName)
+
+	case *ExecSubquery:
+		a.apply(node, n.Exec, replaceExecSubqueryExec)
 
 	case *ExistsExpr:
 		a.apply(node, n.Subquery, replaceExistsExprSubquery)
