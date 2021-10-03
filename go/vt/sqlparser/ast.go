@@ -553,6 +553,7 @@ func (*AliasedTableExpr) iTableExpr() {}
 func (*ParenTableExpr) iTableExpr()   {}
 func (*JoinTableExpr) iTableExpr()    {}
 func (*ExecSubquery) iTableExpr()     {}
+func (*Union) iTableExpr()            {}
 
 type (
 	// SimpleTableExpr represents a simple table expression.
