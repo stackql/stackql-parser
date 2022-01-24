@@ -287,6 +287,7 @@ type (
 		Provider    string
 		Type        string
 		KeyFilePath string
+		KeyEnvVar   string
 	}
 
 	AuthRevoke struct {
@@ -968,7 +969,7 @@ func (node *Auth) Format(buf *TrackedBuffer) {
 	if node.SessionAuth {
 		infraql_opt = "infraql "
 	}
-	buf.astPrintf(node, "%sAUTH %s %s %s", infraql_opt, node.Provider, node.Type, node.KeyFilePath)
+	buf.astPrintf(node, "%sAUTH %s %s %s %s", infraql_opt, node.Provider, node.Type, node.KeyFilePath, node.KeyEnvVar)
 }
 
 // Format formats the node.
