@@ -720,9 +720,9 @@ auth_statement:
     $$ = &Auth{SessionAuth: $1, Provider: $4, Type: $5  }
   }
 |
-  infraql_opt AUTH LOGIN name_opt auth_type STRING
+  infraql_opt AUTH LOGIN name_opt auth_type STRING STRING
   {
-    $$ = &Auth{SessionAuth: $1, Provider: $4, Type: $5, KeyFilePath: string($6)}
+    $$ = &Auth{SessionAuth: $1, Provider: $4, Type: $5, KeyFilePath: string($6), KeyEnvVar: string($7)}
   }
 |
   infraql_opt AUTH REVOKE name_opt

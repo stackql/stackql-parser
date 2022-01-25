@@ -287,6 +287,7 @@ type (
 		Provider    string
 		Type        string
 		KeyFilePath string
+		KeyEnvVar   string
 	}
 
 	AuthRevoke struct {
@@ -553,6 +554,7 @@ func (*AliasedTableExpr) iTableExpr() {}
 func (*ParenTableExpr) iTableExpr()   {}
 func (*JoinTableExpr) iTableExpr()    {}
 func (*ExecSubquery) iTableExpr()     {}
+func (*Union) iTableExpr()            {}
 
 type (
 	// SimpleTableExpr represents a simple table expression.
@@ -967,7 +969,7 @@ func (node *Auth) Format(buf *TrackedBuffer) {
 	if node.SessionAuth {
 		infraql_opt = "infraql "
 	}
-	buf.astPrintf(node, "%sAUTH %s %s %s", infraql_opt, node.Provider, node.Type, node.KeyFilePath)
+	buf.astPrintf(node, "%sAUTH %s %s %s %s", infraql_opt, node.Provider, node.Type, node.KeyFilePath, node.KeyEnvVar)
 }
 
 // Format formats the node.
