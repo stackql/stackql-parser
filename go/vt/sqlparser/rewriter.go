@@ -1241,6 +1241,8 @@ func (a *application) apply(parent, node SQLNode, replacer replacerFunc) {
 
 	case ReferenceAction:
 
+	case *Registry:
+
 	case *Release:
 		a.apply(node, n.Name, replaceReleaseName)
 

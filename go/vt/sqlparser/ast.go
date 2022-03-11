@@ -290,6 +290,12 @@ type (
 		KeyEnvVar   string
 	}
 
+	Registry struct {
+		ActionType      string
+		ProviderId      string
+		ProviderVersion string
+	}
+
 	AuthRevoke struct {
 		SessionAuth BoolVal
 		Provider    string
@@ -323,6 +329,7 @@ func (*Release) iStatement()           {}
 func (*Explain) iStatement()           {}
 func (*OtherRead) iStatement()         {}
 func (*Auth) iStatement()              {}
+func (*Registry) iStatement()          {}
 func (*AuthRevoke) iStatement()        {}
 func (*Exec) iStatement()              {}
 func (*DescribeTable) iStatement()     {}
@@ -970,6 +977,11 @@ func (node *Auth) Format(buf *TrackedBuffer) {
 		infraql_opt = "infraql "
 	}
 	buf.astPrintf(node, "%sAUTH %s %s %s %s", infraql_opt, node.Provider, node.Type, node.KeyFilePath, node.KeyEnvVar)
+}
+
+// Format formats the node.
+func (node *Registry) Format(buf *TrackedBuffer) {
+	buf.astPrintf(node, "AUTH %s %s", node.ActionType, node.ProviderId)
 }
 
 // Format formats the node.

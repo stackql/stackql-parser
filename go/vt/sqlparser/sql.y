@@ -224,11 +224,14 @@ func skipToEnd(yylex interface{}) {
 // Auth tokens
 %token <bytes> AUTH INTERACTIVE LOGIN REVOKE SA SERVICEACCOUNT SLEEP
 
+// Registry tokens
+%token <bytes> REGISTRY PULL LIST
+
 // Exec tokens
 %token <bytes> EXEC
 
 // infraql
-%token <bytes> INFRAQL
+%token <bytes> STACKQL
 
 %type <statement> command
 %type <selStmt> simple_select select_statement base_select union_rhs
@@ -238,7 +241,7 @@ func skipToEnd(yylex interface{}) {
 %type <ddl> create_table_prefix rename_list
 %type <statement> analyze_statement show_statement use_statement other_statement
 %type <statement> begin_statement commit_statement rollback_statement savepoint_statement release_statement
-%type <statement> auth_statement exec_stmt sleep_stmt
+%type <statement> auth_statement exec_stmt sleep_stmt registry_stmt
 %type <boolVal> infraql_opt
 %type <bytes2> comment_opt comment_list
 %type <str> union_op insert_or_replace explain_format_opt wild_opt
@@ -390,6 +393,7 @@ command:
 | flush_statement
 | do_statement
 | auth_statement
+| registry_stmt
 | exec_stmt
 | sleep_stmt
 | /*empty*/
@@ -704,7 +708,7 @@ infraql_opt:
   {
     $$ = BoolVal(false)
   }
-| INFRAQL
+| STACKQL
   {
     $$ = BoolVal(true)
   }
@@ -728,6 +732,17 @@ auth_statement:
   infraql_opt AUTH REVOKE name_opt
   {
     $$ = &AuthRevoke{SessionAuth: $1, Provider: $4 }
+  }
+
+registry_stmt:
+  infraql_opt REGISTRY PULL id_or_var LIST_ARG
+  {
+    $$ = &Registry{ActionType: string($3), ProviderId:  $4.GetRawVal(), ProviderVersion: string($5) }
+  }
+|
+  infraql_opt REGISTRY LIST
+  {
+    $$ = &Registry{ActionType: string($3) }
   }
 
 auth_type:
@@ -3822,7 +3837,7 @@ non_reserved_keyword:
 | HISTOGRAM
 | HISTORY
 | INACTIVE
-| INFRAQL
+| STACKQL
 | INT
 | INTEGER
 | INTERACTIVE

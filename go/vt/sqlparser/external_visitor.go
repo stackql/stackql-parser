@@ -72,6 +72,7 @@ func (node Partitions) Accept(vis SQLAstVisitor) error            { return vis.V
 func (node *PartitionSpec) Accept(vis SQLAstVisitor) error        { return vis.Visit(node) }
 func (node *RangeCond) Accept(vis SQLAstVisitor) error            { return vis.Visit(node) }
 func (node ReferenceAction) Accept(vis SQLAstVisitor) error       { return vis.Visit(node) }
+func (node *Registry) Accept(vis SQLAstVisitor) error             { return vis.Visit(node) }
 func (node *Release) Accept(vis SQLAstVisitor) error              { return vis.Visit(node) }
 func (node *Rollback) Accept(vis SQLAstVisitor) error             { return vis.Visit(node) }
 func (node *SQLVal) Accept(vis SQLAstVisitor) error               { return vis.Visit(node) }
