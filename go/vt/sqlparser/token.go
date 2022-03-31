@@ -994,7 +994,10 @@ func (tkn *Tokenizer) consumeNext(buffer *bytes2.Buffer) {
 }
 
 func (tkn *Tokenizer) peek() string {
-	bufStr := string(tkn.buf[tkn.bufPos:])
+	if tkn.bufPos < 2 {
+		return ""
+	}
+	bufStr := string(tkn.buf[tkn.bufPos-2:])
 	if strings.Contains(bufStr, ";") {
 		return strings.Split(bufStr, ";")[0]
 	}
