@@ -19,6 +19,7 @@ package sqlparser
 import (
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"vitess.io/vitess/go/vt/log"
@@ -681,6 +682,23 @@ func (node *TableIdent) UnmarshalJSON(b []byte) error {
 
 func (node TableIdent) GetRawVal() string {
 	return node.v
+}
+
+func (tn TableName) GetRawVal() string {
+	name := tn.Name.GetRawVal()
+	q1 := tn.Qualifier.GetRawVal()
+	q2 := tn.QualifierSecond.GetRawVal()
+	q3 := tn.QualifierThird.GetRawVal()
+	if q3 != "" {
+		return fmt.Sprintf("%s.%s.%s.%s", name, q1, q2, q3)
+	}
+	if q2 != "" {
+		return fmt.Sprintf("%s.%s.%s", name, q1, q2)
+	}
+	if q1 != "" {
+		return fmt.Sprintf("%s.%s", name, q1)
+	}
+	return name
 }
 
 func ContainEscapableChars(s string, at AtCount) bool {
