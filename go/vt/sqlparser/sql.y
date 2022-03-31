@@ -735,7 +735,7 @@ auth_statement:
   }
 
 registry_stmt:
-  infraql_opt REGISTRY PULL id_or_var id_or_var
+  infraql_opt REGISTRY PULL id_or_var table_name
   {
     $$ = &Registry{ActionType: string($3), ProviderId:  $4.GetRawVal(), ProviderVersion:  $5.GetRawVal() }
   }
@@ -3691,6 +3691,7 @@ reserved_keyword:
 | ELSE
 | END
 | ESCAPE
+| EXEC
 | EXISTS
 | EXPLAIN
 | FALSE
@@ -3820,7 +3821,6 @@ non_reserved_keyword:
 | ENGINES
 | ENUM
 | EXCLUDE
-| EXEC
 | EXPANSION
 | EXTENDED
 | FLOAT_TYPE
