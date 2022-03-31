@@ -22,6 +22,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/Masterminds/semver"
 	"vitess.io/vitess/go/bytes2"
 	"vitess.io/vitess/go/sqltypes"
 )
@@ -551,6 +552,11 @@ func (tkn *Tokenizer) Scan() (int, []byte) {
 				return tkn.scanBitLiteral()
 			}
 		}
+		if ch == 'v' {
+			if _, err := semver.NewVersion(tkn.peek()); err == nil {
+				return tkn.scanIdentifierPermissive(byte(ch), false)
+			}
+		}
 		return tkn.scanIdentifier(byte(ch), false)
 	case isDigit(ch):
 		return tkn.scanNumber(false)
@@ -696,6 +702,29 @@ func (tkn *Tokenizer) scanIdentifier(firstByte byte, isVariable bool) (int, []by
 	for isLetter(tkn.lastChar) ||
 		isDigit(tkn.lastChar) ||
 		tkn.lastChar == '@' ||
+		(isVariable && isCarat(tkn.lastChar)) {
+		buffer.WriteByte(byte(tkn.lastChar))
+		tkn.next()
+	}
+	lowered := bytes.ToLower(buffer.Bytes())
+	loweredStr := string(lowered)
+	if keywordID, found := keywords[loweredStr]; found {
+		return keywordID, buffer.Bytes()
+	}
+	// dual must always be case-insensitive
+	if loweredStr == "dual" {
+		return ID, lowered
+	}
+	return ID, buffer.Bytes()
+}
+
+func (tkn *Tokenizer) scanIdentifierPermissive(firstByte byte, isVariable bool) (int, []byte) {
+	buffer := &bytes2.Buffer{}
+	buffer.WriteByte(firstByte)
+	for isLetter(tkn.lastChar) ||
+		isDigit(tkn.lastChar) ||
+		tkn.lastChar == '@' ||
+		tkn.lastChar == '.' ||
 		(isVariable && isCarat(tkn.lastChar)) {
 		buffer.WriteByte(byte(tkn.lastChar))
 		tkn.next()
@@ -962,6 +991,37 @@ func (tkn *Tokenizer) consumeNext(buffer *bytes2.Buffer) {
 	}
 	buffer.WriteByte(byte(tkn.lastChar))
 	tkn.next()
+}
+
+func (tkn *Tokenizer) peek() string {
+	bufStr := string(tkn.buf[tkn.bufPos:])
+	if strings.Contains(bufStr, ";") {
+		return strings.Split(bufStr, ";")[0]
+	}
+	fields := strings.Fields(bufStr)
+	if len(fields) > 0 {
+		return fields[0]
+	}
+	var err error
+	for {
+		tkn.bufSize, err = tkn.InStream.Read(tkn.buf)
+		if err == io.EOF {
+			break
+		}
+		if err != io.EOF && err != nil {
+			tkn.LastError = err
+			break
+		}
+		bufStr = string(tkn.buf[tkn.bufPos:])
+		if strings.Contains(bufStr, ";") {
+			return strings.Split(bufStr, ";")[0]
+		}
+		fields = strings.Fields(bufStr)
+		if len(fields) > 0 {
+			return fields[0]
+		}
+	}
+	return bufStr
 }
 
 func (tkn *Tokenizer) next() {

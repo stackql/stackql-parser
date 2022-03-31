@@ -735,7 +735,7 @@ auth_statement:
   }
 
 registry_stmt:
-  infraql_opt REGISTRY PULL id_or_var table_name
+  infraql_opt REGISTRY PULL id_or_var id_or_var
   {
     $$ = &Registry{ActionType: string($3), ProviderId:  $4.GetRawVal(), ProviderVersion:  $5.GetRawVal() }
   }

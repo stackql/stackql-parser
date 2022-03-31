@@ -7,6 +7,7 @@ require (
 	github.com/Azure/azure-storage-blob-go v0.8.0
 	github.com/Azure/go-autorest/autorest v0.10.0 // indirect
 	github.com/GeertJohan/go.rice v1.0.0
+	github.com/Masterminds/semver v1.4.2
 	github.com/PuerkitoBio/goquery v1.5.1
 	github.com/armon/go-metrics v0.0.0-20190430140413-ec5e00d3c878 // indirect
 	github.com/aws/aws-sdk-go v1.28.8
