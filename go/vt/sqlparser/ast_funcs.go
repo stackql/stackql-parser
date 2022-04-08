@@ -606,6 +606,15 @@ func (node ColIdent) Lowered() string {
 	return node.lowered
 }
 
+func (node *ColName) GetRawVal() string {
+	name := node.Name.GetRawVal()
+	q1 := node.Qualifier.GetRawVal()
+	if q1 != "" {
+		return fmt.Sprintf("%s.%s", name, q1)
+	}
+	return name
+}
+
 func (node ColIdent) GetRawVal() string {
 	return node.val
 }
