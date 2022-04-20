@@ -610,7 +610,7 @@ func (node *ColName) GetRawVal() string {
 	name := node.Name.GetRawVal()
 	q1 := node.Qualifier.GetRawVal()
 	if q1 != "" {
-		return fmt.Sprintf("%s.%s", name, q1)
+		return fmt.Sprintf("%s.%s", q1, name)
 	}
 	return name
 }
@@ -699,13 +699,13 @@ func (tn TableName) GetRawVal() string {
 	q2 := tn.QualifierSecond.GetRawVal()
 	q3 := tn.QualifierThird.GetRawVal()
 	if q3 != "" {
-		return fmt.Sprintf("%s.%s.%s.%s", name, q1, q2, q3)
+		return fmt.Sprintf("%s.%s.%s.%s", q3, q2, q1, name)
 	}
 	if q2 != "" {
-		return fmt.Sprintf("%s.%s.%s", name, q1, q2)
+		return fmt.Sprintf("%s.%s.%s", q2, q1, name)
 	}
 	if q1 != "" {
-		return fmt.Sprintf("%s.%s", name, q1)
+		return fmt.Sprintf("%s.%s", q1, name)
 	}
 	return name
 }
