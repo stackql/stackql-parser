@@ -3480,6 +3480,18 @@ set_expression:
   {
     $$ = &SetExpr{Name: $1, Expr: $3}
   }
+| reserved_sql_id TO ON
+  {
+    $$ = &SetExpr{Name: $1, Expr: NewStrVal([]byte("on"))}
+  }
+| reserved_sql_id TO OFF
+  {
+    $$ = &SetExpr{Name: $1, Expr: NewStrVal([]byte("off"))}
+  }
+| reserved_sql_id TO expression
+  {
+    $$ = &SetExpr{Name: $1, Expr: $3}
+  }
 | charset_or_character_set charset_value collate_opt
   {
     $$ = &SetExpr{Name: NewColIdent(string($1)), Expr: $2}
