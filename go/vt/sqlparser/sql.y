@@ -740,6 +740,11 @@ registry_stmt:
     $$ = &Registry{ActionType: string($3), ProviderId:  $4.GetRawVal(), ProviderVersion:  $5.GetRawVal() }
   }
 |
+  infraql_opt REGISTRY LIST id_or_var
+  {
+    $$ = &Registry{ActionType: string($3), ProviderId: $4.GetRawVal() }
+  }
+|
   infraql_opt REGISTRY LIST
   {
     $$ = &Registry{ActionType: string($3) }
