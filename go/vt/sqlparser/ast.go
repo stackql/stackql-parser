@@ -1577,18 +1577,9 @@ func (node TableName) Format(buf *TrackedBuffer) {
 	if node.IsEmpty() {
 		return
 	}
-	buf.astPrintf(node, `"`)
-	if !node.QualifierThird.IsEmpty() {
-		buf.astPrintf(node, "%v.", node.QualifierThird)
-	}
-	if !node.QualifierSecond.IsEmpty() {
-		buf.astPrintf(node, "%v.", node.QualifierSecond)
-	}
-	if !node.Qualifier.IsEmpty() {
-		buf.astPrintf(node, "%v.", node.Qualifier)
-	}
-	buf.astPrintf(node, "%v", node.Name)
-	buf.astPrintf(node, `"`)
+	buf.WriteString(`"`)
+	buf.WriteString(node.GetRawVal())
+	buf.WriteString(`"`)
 }
 
 // Format formats the node.
