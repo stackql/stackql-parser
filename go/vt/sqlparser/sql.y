@@ -546,9 +546,9 @@ insert_or_replace:
   }
 
 update_statement:
-  UPDATE comment_opt ignore_opt table_references SET update_list where_expression_opt order_by_opt limit_opt
+  UPDATE comment_opt ignore_opt table_references SET update_list from_opt where_expression_opt order_by_opt limit_opt
   {
-    $$ = &Update{Comments: Comments($2), Ignore: $3, TableExprs: $4, Exprs: $6, Where: NewWhere(WhereStr, $7), OrderBy: $8, Limit: $9}
+    $$ = &Update{Comments: Comments($2), Ignore: $3, TableExprs: $4, Exprs: $6, From: $7, Where: NewWhere(WhereStr, $8), OrderBy: $9, Limit: $10}
   }
 
 delete_statement:

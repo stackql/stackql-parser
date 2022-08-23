@@ -133,6 +133,7 @@ type (
 		Ignore     string
 		TableExprs TableExprs
 		Exprs      UpdateExprs
+		From       TableExprs
 		Where      *Where
 		OrderBy    OrderBy
 		Limit      *Limit

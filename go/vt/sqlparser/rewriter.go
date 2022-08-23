@@ -813,6 +813,10 @@ func replaceUpdateExprs(newNode, parent SQLNode) {
 	parent.(*Update).Exprs = newNode.(UpdateExprs)
 }
 
+func replaceUpdateFrom(newNode, parent SQLNode) {
+	parent.(*Update).From = newNode.(TableExprs)
+}
+
 func replaceUpdateLimit(newNode, parent SQLNode) {
 	parent.(*Update).Limit = newNode.(*Limit)
 }
@@ -1397,6 +1401,7 @@ func (a *application) apply(parent, node SQLNode, replacer replacerFunc) {
 	case *Update:
 		a.apply(node, n.Comments, replaceUpdateComments)
 		a.apply(node, n.Exprs, replaceUpdateExprs)
+		a.apply(node, n.From, replaceUpdateFrom)
 		a.apply(node, n.Limit, replaceUpdateLimit)
 		a.apply(node, n.OrderBy, replaceUpdateOrderBy)
 		a.apply(node, n.TableExprs, replaceUpdateTableExprs)
