@@ -81,6 +81,21 @@ type (
 		OptExecPayload *ExecVarDef
 	}
 
+	// Purge represents a PURGE statement
+	Purge struct {
+		Await    bool
+		Comments Comments
+		IsGlobal bool
+		Target   TableName
+	}
+
+	// Purge represents a PURGE statement
+	NativeQuery struct {
+		Await       bool
+		Comments    Comments
+		QueryString string
+	}
+
 	Sleep struct {
 		Duration *SQLVal
 	}
@@ -333,6 +348,8 @@ func (*Auth) iStatement()              {}
 func (*Registry) iStatement()          {}
 func (*AuthRevoke) iStatement()        {}
 func (*Exec) iStatement()              {}
+func (*Purge) iStatement()             {}
+func (*NativeQuery) iStatement()       {}
 func (*DescribeTable) iStatement()     {}
 func (*OtherAdmin) iStatement()        {}
 func (*Select) iSelectStatement()      {}
@@ -960,6 +977,14 @@ func (node *Select) Format(buf *TrackedBuffer) {
 
 func (node *Exec) Format(buf *TrackedBuffer) {
 	buf.astPrintf(node, "exec %v %v", node.Comments, node.MethodName)
+}
+
+func (node *Purge) Format(buf *TrackedBuffer) {
+	buf.astPrintf(node, "purge %v %v", node.Comments, node.Target)
+}
+
+func (node *NativeQuery) Format(buf *TrackedBuffer) {
+	buf.astPrintf(node, "purge %v '%v'", node.Comments, node.QueryString)
 }
 
 func (node *ExecSubquery) Format(buf *TrackedBuffer) {

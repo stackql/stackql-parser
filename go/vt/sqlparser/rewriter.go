@@ -442,6 +442,10 @@ func replaceMatchExprExpr(newNode, parent SQLNode) {
 	parent.(*MatchExpr).Expr = newNode.(Expr)
 }
 
+func replaceNativeQueryComments(newNode, parent SQLNode) {
+	parent.(*NativeQuery).Comments = newNode.(Comments)
+}
+
 func replaceNextvalExpr(newNode, parent SQLNode) {
 	tmp := parent.(Nextval)
 	tmp.Expr = newNode.(Expr)
@@ -525,6 +529,14 @@ func (r *replacePartitionsItems) replace(newNode, container SQLNode) {
 
 func (r *replacePartitionsItems) inc() {
 	*r++
+}
+
+func replacePurgeComments(newNode, parent SQLNode) {
+	parent.(*Purge).Comments = newNode.(Comments)
+}
+
+func replacePurgeTarget(newNode, parent SQLNode) {
+	parent.(*Purge).Target = newNode.(TableName)
 }
 
 func replaceRangeCondFrom(newNode, parent SQLNode) {
@@ -1173,6 +1185,9 @@ func (a *application) apply(parent, node SQLNode, replacer replacerFunc) {
 		a.apply(node, n.Columns, replaceMatchExprColumns)
 		a.apply(node, n.Expr, replaceMatchExprExpr)
 
+	case *NativeQuery:
+		a.apply(node, n.Comments, replaceNativeQueryComments)
+
 	case Nextval:
 		a.apply(node, n.Expr, replaceNextvalExpr)
 
@@ -1237,6 +1252,10 @@ func (a *application) apply(parent, node SQLNode, replacer replacerFunc) {
 			a.apply(node, item, replacerRef.replace)
 			replacerRef.inc()
 		}
+
+	case *Purge:
+		a.apply(node, n.Comments, replacePurgeComments)
+		a.apply(node, n.Target, replacePurgeTarget)
 
 	case *RangeCond:
 		a.apply(node, n.From, replaceRangeCondFrom)

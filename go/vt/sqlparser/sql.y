@@ -230,7 +230,13 @@ func skipToEnd(yylex interface{}) {
 // Exec tokens
 %token <bytes> EXEC
 
-// infraql
+// Purge tokens
+%token <bytes> PURGE
+
+// NativeQuery tokens
+%token <bytes> NATIVEQUERY
+
+// stackql
 %token <bytes> STACKQL
 
 %type <statement> command
@@ -241,7 +247,7 @@ func skipToEnd(yylex interface{}) {
 %type <ddl> create_table_prefix rename_list
 %type <statement> analyze_statement show_statement use_statement other_statement
 %type <statement> begin_statement commit_statement rollback_statement savepoint_statement release_statement
-%type <statement> auth_statement exec_stmt sleep_stmt registry_stmt
+%type <statement> auth_statement exec_stmt sleep_stmt registry_stmt purge_stmt nativequery_stmt
 %type <boolVal> infraql_opt
 %type <bytes2> comment_opt comment_list
 %type <str> union_op insert_or_replace explain_format_opt wild_opt
@@ -396,6 +402,8 @@ command:
 | registry_stmt
 | exec_stmt
 | sleep_stmt
+| purge_stmt
+| nativequery_stmt
 | /*empty*/
 {
   setParseTree(yylex, nil)
@@ -1839,6 +1847,11 @@ show_statement:
   {
     showTablesOpt := &ShowTablesOpt{Filter: $7}
     $$ = &Show{Extended: string($2), Comments: Comments($4), Type: string($3), OnTable: $5, ShowTablesOpt: showTablesOpt, Columns: $6}
+  }
+| SHOW TRANSACTION ISOLATION LEVEL
+
+  {
+    $$ = &Show{Type: "TRANSACTION_ISOLATION_LEVEL"}
   }
 
 tables_or_processlist:
@@ -3663,6 +3676,22 @@ exec_stmt:
     $$ = NewExec($2, $3, $4, $5)
   }
 
+purge_stmt:
+   PURGE comment_opt
+  {
+    $$ = NewPurge($2, TableName{}, true)
+  }
+| PURGE comment_opt table_name
+  {
+    $$ = NewPurge($2, $3, false)
+  }
+
+nativequery_stmt:
+  NATIVEQUERY comment_opt STRING
+  {
+    $$ = NewNativeQuery($2, string($3))
+  }
+
 
 /*
   These are not all necessarily reserved in MySQL, but some are.
@@ -3885,6 +3914,7 @@ non_reserved_keyword:
 | MULTIPOINT
 | MULTIPOLYGON
 | NAMES
+| NATIVEQUERY
 | NCHAR
 | NESTED
 | NETWORK_NAMESPACE
@@ -3914,6 +3944,7 @@ non_reserved_keyword:
 | PRIMARY
 | PROCEDURE
 | PROCESSLIST
+| PURGE
 | QUERY
 | RANDOM
 | READ

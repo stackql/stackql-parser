@@ -70,6 +70,8 @@ func (node *ParenTableExpr) Accept(vis SQLAstVisitor) error       { return vis.V
 func (node *PartitionDefinition) Accept(vis SQLAstVisitor) error  { return vis.Visit(node) }
 func (node Partitions) Accept(vis SQLAstVisitor) error            { return vis.Visit(node) }
 func (node *PartitionSpec) Accept(vis SQLAstVisitor) error        { return vis.Visit(node) }
+func (node *Purge) Accept(vis SQLAstVisitor) error                { return vis.Visit(node) }
+func (node *NativeQuery) Accept(vis SQLAstVisitor) error          { return vis.Visit(node) }
 func (node *RangeCond) Accept(vis SQLAstVisitor) error            { return vis.Visit(node) }
 func (node ReferenceAction) Accept(vis SQLAstVisitor) error       { return vis.Visit(node) }
 func (node *Registry) Accept(vis SQLAstVisitor) error             { return vis.Visit(node) }
