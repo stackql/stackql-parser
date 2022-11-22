@@ -28,8 +28,9 @@ import (
 )
 
 const (
-	defaultBufSize = 4096
-	eofChar        = 0x100
+	defaultBufSize        = 4096
+	eofChar               = 0x100
+	literalDelim   uint16 = '"'
 )
 
 // Tokenizer is the struct used to generate SQL
@@ -531,7 +532,7 @@ func (tkn *Tokenizer) Scan() (int, []byte) {
 		var tBytes []byte
 		ch = tkn.lastChar
 		tkn.next()
-		if ch == '`' {
+		if ch == literalDelim {
 			tID, tBytes = tkn.scanLiteralIdentifier()
 		} else {
 			tID, tBytes = tkn.scanIdentifier(byte(ch), true)
@@ -669,9 +670,9 @@ func (tkn *Tokenizer) Scan() (int, []byte) {
 				return NE, nil
 			}
 			return int(ch), nil
-		case '\'', '"':
+		case '\'':
 			return tkn.scanString(ch, STRING)
-		case '`':
+		case literalDelim:
 			return tkn.scanLiteralIdentifier()
 		default:
 			return LEX_ERROR, []byte{byte(ch)}
@@ -771,17 +772,17 @@ func (tkn *Tokenizer) scanLiteralIdentifier() (int, []byte) {
 	backTickSeen := false
 	for {
 		if backTickSeen {
-			if tkn.lastChar != '`' {
+			if tkn.lastChar != literalDelim {
 				break
 			}
 			backTickSeen = false
-			buffer.WriteByte('`')
+			buffer.WriteByte(byte(literalDelim))
 			tkn.next()
 			continue
 		}
 		// The previous char was not a backtick.
 		switch tkn.lastChar {
-		case '`':
+		case literalDelim:
 			backTickSeen = true
 		case eofChar:
 			// Premature EOF.
@@ -1066,7 +1067,7 @@ func isLetter(ch uint16) bool {
 }
 
 func isCarat(ch uint16) bool {
-	return ch == '.' || ch == '\'' || ch == '"' || ch == '`'
+	return ch == '.' || ch == '\'' || ch == literalDelim
 }
 
 func digitVal(ch uint16) int {
