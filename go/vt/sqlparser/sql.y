@@ -695,13 +695,13 @@ create_statement:
     // Change this to an alter statement
     $$ = &DDL{Action: AlterStr, Table: $7}
   }
-| CREATE VIEW table_name ddl_skip_to_end
+| CREATE VIEW table_name AS select_statement
   {
-    $$ = &DDL{Action: CreateStr, Table: $3.ToViewName()}
+    $$ = &DDL{Action: CreateStr, Table: $3.ToViewName(), SelectStatement: $5 }
   }
-| CREATE OR REPLACE VIEW table_name ddl_skip_to_end
+| CREATE OR REPLACE VIEW table_name AS select_statement
   {
-    $$ = &DDL{Action: CreateStr, Table: $5.ToViewName()}
+    $$ = &DDL{Action: CreateStr, Table: $5.ToViewName(), SelectStatement: $7 }
   }
 | CREATE DATABASE not_exists_opt id_or_var ddl_skip_to_end
   {

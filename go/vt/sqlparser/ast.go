@@ -232,6 +232,9 @@ type (
 
 		// AutoIncSpec is set for AddAutoIncStr.
 		AutoIncSpec *AutoIncSpec
+
+		// SelectStatement is set for Create View.
+		SelectStatement SelectStatement
 	}
 
 	// ParenSelect is a parenthesized SELECT statement.
