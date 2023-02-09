@@ -350,6 +350,14 @@ func (node TableName) IsEmpty() bool {
 	return node.Name.IsEmpty()
 }
 
+func (lac ListArgConcatamer) String() string {
+	var rv string
+	for _, entry := range lac {
+		rv = rv + string(entry)
+	}
+	return rv
+}
+
 // ToViewName returns a TableName acceptable for use as a VIEW. VIEW names are
 // always lowercase, so ToViewName lowercasese the name. Databases are case-sensitive
 // so Qualifier is left untouched.
@@ -544,7 +552,7 @@ func NewExecVarDef(colIdent ColIdent, val Expr) ExecVarDef {
 	}
 }
 
-//NewSelect is used to create a select statement
+// NewSelect is used to create a select statement
 func NewSelect(comments Comments, exprs SelectExprs, selectOptions []string, from TableExprs, where *Where, groupBy GroupBy, having *Where) *Select {
 	var cache *bool
 	var distinct, straightJoinHint, sqlFoundRows bool
@@ -858,7 +866,7 @@ func (node *Union) SetLock(lock string) {
 	node.Lock = lock
 }
 
-//Unionize returns a UNION, either creating one or adding SELECT to an existing one
+// Unionize returns a UNION, either creating one or adding SELECT to an existing one
 func Unionize(lhs, rhs SelectStatement, typ string, by OrderBy, limit *Limit, lock string) *Union {
 	union, isUnion := lhs.(*Union)
 	if isUnion {
