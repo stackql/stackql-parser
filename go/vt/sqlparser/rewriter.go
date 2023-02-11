@@ -212,6 +212,10 @@ func replaceDDLPartitionSpec(newNode, parent SQLNode) {
 	parent.(*DDL).PartitionSpec = newNode.(*PartitionSpec)
 }
 
+func replaceDDLSelectStatement(newNode, parent SQLNode) {
+	parent.(*DDL).SelectStatement = newNode.(SelectStatement)
+}
+
 func replaceDDLTable(newNode, parent SQLNode) {
 	parent.(*DDL).Table = newNode.(TableName)
 }
@@ -787,6 +791,10 @@ func replaceTimestampFuncExprExpr2(newNode, parent SQLNode) {
 	parent.(*TimestampFuncExpr).Expr2 = newNode.(Expr)
 }
 
+func replaceUnaryCastConcatamerExprExpr(newNode, parent SQLNode) {
+	parent.(*UnaryCastConcatamerExpr).Expr = newNode.(Expr)
+}
+
 func replaceUnaryExprExpr(newNode, parent SQLNode) {
 	parent.(*UnaryExpr).Expr = newNode.(Expr)
 }
@@ -1065,6 +1073,7 @@ func (a *application) apply(parent, node SQLNode, replacer replacerFunc) {
 		a.apply(node, n.FromTables, replaceDDLFromTables)
 		a.apply(node, n.OptLike, replaceDDLOptLike)
 		a.apply(node, n.PartitionSpec, replaceDDLPartitionSpec)
+		a.apply(node, n.SelectStatement, replaceDDLSelectStatement)
 		a.apply(node, n.Table, replaceDDLTable)
 		a.apply(node, n.TableSpec, replaceDDLTableSpec)
 		a.apply(node, n.ToTables, replaceDDLToTables)
@@ -1399,6 +1408,9 @@ func (a *application) apply(parent, node SQLNode, replacer replacerFunc) {
 	case *TimestampFuncExpr:
 		a.apply(node, n.Expr1, replaceTimestampFuncExprExpr1)
 		a.apply(node, n.Expr2, replaceTimestampFuncExprExpr2)
+
+	case *UnaryCastConcatamerExpr:
+		a.apply(node, n.Expr, replaceUnaryCastConcatamerExprExpr)
 
 	case *UnaryExpr:
 		a.apply(node, n.Expr, replaceUnaryExprExpr)

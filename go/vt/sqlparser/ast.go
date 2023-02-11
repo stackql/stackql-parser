@@ -727,6 +727,9 @@ type (
 	// ListArg represents a named list argument.
 	ListArg []byte
 
+	// ListArgConcatamer represents a concatamer string of apparent list arguments / postgres cast operators.
+	ListArgConcatamer []ListArg
+
 	// ValTuple represents a tuple of actual values.
 	ValTuple Exprs
 
@@ -740,6 +743,12 @@ type (
 	UnaryExpr struct {
 		Operator string
 		Expr     Expr
+	}
+
+	// UnaryCastConcatamerExpr represents an expression with a casting concatamer suffix.
+	UnaryCastConcatamerExpr struct {
+		CastConcatamer ListArgConcatamer
+		Expr           Expr
 	}
 
 	// IntervalExpr represents a date-time INTERVAL expression.
@@ -843,36 +852,37 @@ type (
 )
 
 // iExpr ensures that only expressions nodes can be assigned to a Expr
-func (*AndExpr) iExpr()           {}
-func (*OrExpr) iExpr()            {}
-func (*XorExpr) iExpr()           {}
-func (*NotExpr) iExpr()           {}
-func (*ComparisonExpr) iExpr()    {}
-func (*RangeCond) iExpr()         {}
-func (*IsExpr) iExpr()            {}
-func (*ExistsExpr) iExpr()        {}
-func (*SQLVal) iExpr()            {}
-func (*NullVal) iExpr()           {}
-func (BoolVal) iExpr()            {}
-func (*ColName) iExpr()           {}
-func (ValTuple) iExpr()           {}
-func (*Subquery) iExpr()          {}
-func (ListArg) iExpr()            {}
-func (*BinaryExpr) iExpr()        {}
-func (*UnaryExpr) iExpr()         {}
-func (*IntervalExpr) iExpr()      {}
-func (*CollateExpr) iExpr()       {}
-func (*FuncExpr) iExpr()          {}
-func (*TimestampFuncExpr) iExpr() {}
-func (*CurTimeFuncExpr) iExpr()   {}
-func (*CaseExpr) iExpr()          {}
-func (*ValuesFuncExpr) iExpr()    {}
-func (*ConvertExpr) iExpr()       {}
-func (*SubstrExpr) iExpr()        {}
-func (*ConvertUsingExpr) iExpr()  {}
-func (*MatchExpr) iExpr()         {}
-func (*GroupConcatExpr) iExpr()   {}
-func (*Default) iExpr()           {}
+func (*AndExpr) iExpr()                 {}
+func (*OrExpr) iExpr()                  {}
+func (*XorExpr) iExpr()                 {}
+func (*NotExpr) iExpr()                 {}
+func (*ComparisonExpr) iExpr()          {}
+func (*RangeCond) iExpr()               {}
+func (*IsExpr) iExpr()                  {}
+func (*ExistsExpr) iExpr()              {}
+func (*SQLVal) iExpr()                  {}
+func (*NullVal) iExpr()                 {}
+func (BoolVal) iExpr()                  {}
+func (*ColName) iExpr()                 {}
+func (ValTuple) iExpr()                 {}
+func (*Subquery) iExpr()                {}
+func (ListArg) iExpr()                  {}
+func (*BinaryExpr) iExpr()              {}
+func (*UnaryExpr) iExpr()               {}
+func (*UnaryCastConcatamerExpr) iExpr() {}
+func (*IntervalExpr) iExpr()            {}
+func (*CollateExpr) iExpr()             {}
+func (*FuncExpr) iExpr()                {}
+func (*TimestampFuncExpr) iExpr()       {}
+func (*CurTimeFuncExpr) iExpr()         {}
+func (*CaseExpr) iExpr()                {}
+func (*ValuesFuncExpr) iExpr()          {}
+func (*ConvertExpr) iExpr()             {}
+func (*SubstrExpr) iExpr()              {}
+func (*ConvertUsingExpr) iExpr()        {}
+func (*MatchExpr) iExpr()               {}
+func (*GroupConcatExpr) iExpr()         {}
+func (*Default) iExpr()                 {}
 
 // Exprs represents a list of value expressions.
 // It's not a valid expression because it's not parenthesized.
@@ -1764,6 +1774,15 @@ func (node ListArg) Format(buf *TrackedBuffer) {
 // Format formats the node.
 func (node *BinaryExpr) Format(buf *TrackedBuffer) {
 	buf.astPrintf(node, "%v %s %v", node.Left, node.Operator, node.Right)
+}
+
+// Format formats the node.
+func (node *UnaryCastConcatamerExpr) Format(buf *TrackedBuffer) {
+	var s string
+	for _, n := range node.CastConcatamer {
+		s = s + string(n)
+	}
+	buf.astPrintf(node, "%v%s", node.Expr, s)
 }
 
 // Format formats the node.
