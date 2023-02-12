@@ -22,7 +22,7 @@ import (
 	"strings"
 	"testing"
 
-	querypb "vitess.io/vitess/go/vt/proto/query"
+	querypb "github.com/stackql/stackql-parser/go/vt/proto/query"
 )
 
 const (

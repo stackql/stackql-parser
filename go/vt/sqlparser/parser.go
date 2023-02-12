@@ -22,10 +22,10 @@ import (
 	"io"
 	"sync"
 
-	"vitess.io/vitess/go/vt/log"
-	"vitess.io/vitess/go/vt/vterrors"
+	"github.com/stackql/stackql-parser/go/vt/log"
+	"github.com/stackql/stackql-parser/go/vt/vterrors"
 
-	vtrpcpb "vitess.io/vitess/go/vt/proto/vtrpc"
+	vtrpcpb "github.com/stackql/stackql-parser/go/vt/proto/vtrpc"
 )
 
 // parserPool is a pool for parser objects.
@@ -42,8 +42,9 @@ var zeroParser = *(yyNewParser().(*yyParserImpl))
 //
 // N.B: Parser pooling means that you CANNOT take references directly to parse stack variables (e.g.
 // $$ = &$4) in sql.y rules. You must instead add an intermediate reference like so:
-//    showCollationFilterOpt := $4
-//    $$ = &Show{Type: string($2), ShowCollationFilterOpt: &showCollationFilterOpt}
+//
+//	showCollationFilterOpt := $4
+//	$$ = &Show{Type: string($2), ShowCollationFilterOpt: &showCollationFilterOpt}
 func yyParsePooled(yylex yyLexer) int {
 	// Being very particular about using the base type and not an interface type b/c we depend on
 	// the implementation to know how to reinitialize the parser.

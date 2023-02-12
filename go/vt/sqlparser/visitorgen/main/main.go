@@ -25,10 +25,10 @@ import (
 	"io/ioutil"
 	"os"
 
-	"vitess.io/vitess/go/exit"
-	"vitess.io/vitess/go/vt/log"
+	"github.com/stackql/stackql-parser/go/exit"
+	"github.com/stackql/stackql-parser/go/vt/log"
 
-	"vitess.io/vitess/go/vt/sqlparser/visitorgen"
+	"github.com/stackql/stackql-parser/go/vt/sqlparser/visitorgen"
 )
 
 var (

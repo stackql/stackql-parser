@@ -19,10 +19,11 @@ package sqltypes
 import (
 	"testing"
 
+	querypb "github.com/stackql/stackql-parser/go/vt/proto/query"
+	vtrpcpb "github.com/stackql/stackql-parser/go/vt/proto/vtrpc"
+	"github.com/stackql/stackql-parser/go/vt/vterrors"
+
 	"github.com/golang/protobuf/proto"
-	querypb "vitess.io/vitess/go/vt/proto/query"
-	vtrpcpb "vitess.io/vitess/go/vt/proto/vtrpc"
-	"vitess.io/vitess/go/vt/vterrors"
 )
 
 func TestResult(t *testing.T) {

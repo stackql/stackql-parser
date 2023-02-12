@@ -19,12 +19,12 @@ package sqlparser
 import (
 	"fmt"
 
-	"vitess.io/vitess/go/vt/vtgate/evalengine"
+	"github.com/stackql/stackql-parser/go/vt/vtgate/evalengine"
 )
 
 var ExprNotSupported = fmt.Errorf("Expr Not Supported")
 
-//Convert converts between AST expressions and executable expressions
+// Convert converts between AST expressions and executable expressions
 func Convert(e Expr) (evalengine.Expr, error) {
 	switch node := e.(type) {
 	case *SQLVal:

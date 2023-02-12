@@ -22,9 +22,10 @@ import (
 	"io"
 	"strings"
 
+	"github.com/stackql/stackql-parser/go/bytes2"
+	"github.com/stackql/stackql-parser/go/sqltypes"
+
 	"github.com/Masterminds/semver"
-	"vitess.io/vitess/go/bytes2"
-	"vitess.io/vitess/go/sqltypes"
 )
 
 const (

@@ -23,9 +23,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"vitess.io/vitess/go/sqltypes"
+	"github.com/stackql/stackql-parser/go/sqltypes"
 
-	querypb "vitess.io/vitess/go/vt/proto/query"
+	querypb "github.com/stackql/stackql-parser/go/vt/proto/query"
 )
 
 // more tests in go/sqlparser/expressions_test.go

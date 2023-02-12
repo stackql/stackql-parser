@@ -19,7 +19,7 @@ package trace
 import (
 	"io"
 
-	"vitess.io/vitess/go/vt/log"
+	"github.com/stackql/stackql-parser/go/vt/log"
 )
 
 // LogErrorsWhenClosing will close the provided Closer, and log any errors it generates

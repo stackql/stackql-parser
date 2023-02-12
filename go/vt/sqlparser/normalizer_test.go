@@ -21,8 +21,8 @@ import (
 	"reflect"
 	"testing"
 
-	"vitess.io/vitess/go/sqltypes"
-	querypb "vitess.io/vitess/go/vt/proto/query"
+	"github.com/stackql/stackql-parser/go/sqltypes"
+	querypb "github.com/stackql/stackql-parser/go/vt/proto/query"
 )
 
 func TestNormalize(t *testing.T) {

@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"testing"
 
-	vtrpcpb "vitess.io/vitess/go/vt/proto/vtrpc"
+	vtrpcpb "github.com/stackql/stackql-parser/go/vt/proto/vtrpc"
 )
 
 var errGeneric = "generic error"

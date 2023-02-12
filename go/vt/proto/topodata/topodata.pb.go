@@ -8,7 +8,7 @@ import (
 	math "math"
 
 	proto "github.com/golang/protobuf/proto"
-	vttime "vitess.io/vitess/go/vt/proto/vttime"
+	vttime "github.com/stackql/stackql-parser/go/vt/proto/vttime"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.

@@ -19,9 +19,9 @@ package sqltypes
 import (
 	"encoding/json"
 
-	querypb "vitess.io/vitess/go/vt/proto/query"
-	vtrpcpb "vitess.io/vitess/go/vt/proto/vtrpc"
-	"vitess.io/vitess/go/vt/vterrors"
+	querypb "github.com/stackql/stackql-parser/go/vt/proto/query"
+	vtrpcpb "github.com/stackql/stackql-parser/go/vt/proto/vtrpc"
+	"github.com/stackql/stackql-parser/go/vt/vterrors"
 )
 
 // PlanValue represents a value or a list of values for
@@ -34,28 +34,36 @@ import (
 // the required output is a list of rows (like in the case
 // of multi-value inserts), the representation is pivoted.
 // For example, a statement like this:
-// 	INSERT INTO t VALUES (1, 2), (3, 4)
+//
+//	INSERT INTO t VALUES (1, 2), (3, 4)
+//
 // will be represented as follows:
-// 	[]PlanValue{
-// 		Values: {1, 3},
-// 		Values: {2, 4},
-// 	}
+//
+//	[]PlanValue{
+//		Values: {1, 3},
+//		Values: {2, 4},
+//	}
 //
 // For WHERE clause items that contain a combination of
 // equality expressions and IN clauses like this:
-//   WHERE pk1 = 1 AND pk2 IN (2, 3, 4)
+//
+//	WHERE pk1 = 1 AND pk2 IN (2, 3, 4)
+//
 // The plan values will be represented as follows:
-// 	[]PlanValue{
-// 		Value: 1,
-// 		Values: {2, 3, 4},
-// 	}
+//
+//	[]PlanValue{
+//		Value: 1,
+//		Values: {2, 3, 4},
+//	}
+//
 // When converted into rows, columns with single values
 // are replicated as the same for all rows:
-// 	[][]Value{
-// 		{1, 2},
-// 		{1, 3},
-// 		{1, 4},
-// 	}
+//
+//	[][]Value{
+//		{1, 2},
+//		{1, 3},
+//		{1, 4},
+//	}
 type PlanValue struct {
 	Key     string
 	Value   Value

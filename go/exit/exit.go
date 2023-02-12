@@ -50,8 +50,8 @@ package exit
 import (
 	"os"
 
-	"vitess.io/vitess/go/tb"
-	"vitess.io/vitess/go/vt/log"
+	"github.com/stackql/stackql-parser/go/tb"
+	"github.com/stackql/stackql-parser/go/vt/log"
 )
 
 type exitCode int

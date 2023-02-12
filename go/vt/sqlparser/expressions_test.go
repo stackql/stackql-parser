@@ -19,13 +19,14 @@ package sqlparser
 import (
 	"testing"
 
-	"vitess.io/vitess/go/vt/vtgate/evalengine"
+	"github.com/stackql/stackql-parser/go/vt/vtgate/evalengine"
 
-	"vitess.io/vitess/go/sqltypes"
+	"github.com/stackql/stackql-parser/go/sqltypes"
+
+	querypb "github.com/stackql/stackql-parser/go/vt/proto/query"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	querypb "vitess.io/vitess/go/vt/proto/query"
 )
 
 /*
