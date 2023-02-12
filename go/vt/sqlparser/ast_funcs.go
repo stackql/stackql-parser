@@ -22,10 +22,10 @@ import (
 	"fmt"
 	"strings"
 
-	"vitess.io/vitess/go/vt/log"
+	"github.com/stackql/stackql-parser/go/vt/log"
 
-	"vitess.io/vitess/go/sqltypes"
-	querypb "vitess.io/vitess/go/vt/proto/query"
+	"github.com/stackql/stackql-parser/go/sqltypes"
+	querypb "github.com/stackql/stackql-parser/go/vt/proto/query"
 )
 
 // Walk calls visit on every node.

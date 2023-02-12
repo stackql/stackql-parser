@@ -19,11 +19,13 @@ package sqlparser
 import (
 	"testing"
 
+	"github.com/stackql/stackql-parser/go/test/utils"
+
 	"github.com/stretchr/testify/require"
-	"vitess.io/vitess/go/test/utils"
+
+	"github.com/stackql/stackql-parser/go/sqltypes"
 
 	"github.com/stretchr/testify/assert"
-	"vitess.io/vitess/go/sqltypes"
 )
 
 func TestPreview(t *testing.T) {

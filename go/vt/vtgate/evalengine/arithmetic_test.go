@@ -24,15 +24,15 @@ import (
 	"strconv"
 	"testing"
 
-	"vitess.io/vitess/go/test/utils"
+	"github.com/stackql/stackql-parser/go/test/utils"
 
 	"github.com/stretchr/testify/require"
 
-	"vitess.io/vitess/go/sqltypes"
+	"github.com/stackql/stackql-parser/go/sqltypes"
 
-	querypb "vitess.io/vitess/go/vt/proto/query"
-	vtrpcpb "vitess.io/vitess/go/vt/proto/vtrpc"
-	"vitess.io/vitess/go/vt/vterrors"
+	querypb "github.com/stackql/stackql-parser/go/vt/proto/query"
+	vtrpcpb "github.com/stackql/stackql-parser/go/vt/proto/vtrpc"
+	"github.com/stackql/stackql-parser/go/vt/vterrors"
 )
 
 func TestArithmetics(t *testing.T) {

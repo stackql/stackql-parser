@@ -19,12 +19,13 @@ package trace
 import (
 	"strings"
 
+	"github.com/stackql/stackql-parser/go/vt/proto/vtrpc"
+	"github.com/stackql/stackql-parser/go/vt/vterrors"
+
 	otgrpc "github.com/opentracing-contrib/go-grpc"
 	"github.com/opentracing/opentracing-go"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-	"vitess.io/vitess/go/vt/proto/vtrpc"
-	"vitess.io/vitess/go/vt/vterrors"
 )
 
 var _ Span = (*openTracingSpan)(nil)

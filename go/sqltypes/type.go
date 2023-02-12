@@ -19,7 +19,7 @@ package sqltypes
 import (
 	"fmt"
 
-	querypb "vitess.io/vitess/go/vt/proto/query"
+	querypb "github.com/stackql/stackql-parser/go/vt/proto/query"
 )
 
 // This file provides wrappers and support
@@ -251,7 +251,7 @@ func MySQLToType(mysqlType, flags int64) (typ querypb.Type, err error) {
 	return modifyType(result, flags), nil
 }
 
-//TypeEquivalenceCheck returns whether two types are equivalent.
+// TypeEquivalenceCheck returns whether two types are equivalent.
 func AreTypesEquivalent(mysqlTypeFromBinlog, mysqlTypeFromSchema querypb.Type) bool {
 	return (mysqlTypeFromBinlog == mysqlTypeFromSchema) ||
 		(mysqlTypeFromBinlog == VarChar && mysqlTypeFromSchema == VarBinary) ||

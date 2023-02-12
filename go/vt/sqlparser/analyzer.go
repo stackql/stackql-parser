@@ -23,10 +23,10 @@ import (
 	"strings"
 	"unicode"
 
-	"vitess.io/vitess/go/sqltypes"
-	"vitess.io/vitess/go/vt/vterrors"
+	"github.com/stackql/stackql-parser/go/sqltypes"
+	"github.com/stackql/stackql-parser/go/vt/vterrors"
 
-	vtrpcpb "vitess.io/vitess/go/vt/proto/vtrpc"
+	vtrpcpb "github.com/stackql/stackql-parser/go/vt/proto/vtrpc"
 )
 
 // StatementType encodes the type of a SQL statement
@@ -55,7 +55,7 @@ const (
 	StmtExplain
 )
 
-//ASTToStatementType returns a StatementType from an AST stmt
+// ASTToStatementType returns a StatementType from an AST stmt
 func ASTToStatementType(stmt Statement) StatementType {
 	switch stmt.(type) {
 	case *Select, *Union:
@@ -89,7 +89,7 @@ func ASTToStatementType(stmt Statement) StatementType {
 	}
 }
 
-//CanNormalize takes Statement and returns if the statement can be normalized.
+// CanNormalize takes Statement and returns if the statement can be normalized.
 func CanNormalize(stmt Statement) bool {
 	switch stmt.(type) {
 	case *Select, *Union, *Insert, *Update, *Delete, *Set:
@@ -98,7 +98,7 @@ func CanNormalize(stmt Statement) bool {
 	return false
 }
 
-//IsSetStatement takes Statement and returns if the statement is set statement.
+// IsSetStatement takes Statement and returns if the statement is set statement.
 func IsSetStatement(stmt Statement) bool {
 	switch stmt.(type) {
 	case *Set:
@@ -219,7 +219,7 @@ func IsDML(sql string) bool {
 	return false
 }
 
-//IsDMLStatement returns true if the query is an INSERT, UPDATE or DELETE statement.
+// IsDMLStatement returns true if the query is an INSERT, UPDATE or DELETE statement.
 func IsDMLStatement(stmt Statement) bool {
 	switch stmt.(type) {
 	case *Insert, *Update, *Delete:
@@ -229,7 +229,7 @@ func IsDMLStatement(stmt Statement) bool {
 	return false
 }
 
-//IsVschemaDDL returns true if the query is an Vschema alter ddl.
+// IsVschemaDDL returns true if the query is an Vschema alter ddl.
 func IsVschemaDDL(ddl *DDL) bool {
 	switch ddl.Action {
 	case CreateVindexStr, DropVindexStr, AddVschemaTableStr, DropVschemaTableStr, AddColVindexStr, DropColVindexStr, AddSequenceStr, AddAutoIncStr:

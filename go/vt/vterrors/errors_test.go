@@ -24,8 +24,9 @@ import (
 	"strings"
 	"testing"
 
+	vtrpcpb "github.com/stackql/stackql-parser/go/vt/proto/vtrpc"
+
 	"golang.org/x/net/context"
-	vtrpcpb "vitess.io/vitess/go/vt/proto/vtrpc"
 )
 
 func TestWrapNil(t *testing.T) {

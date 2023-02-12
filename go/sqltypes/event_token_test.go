@@ -19,8 +19,9 @@ package sqltypes
 import (
 	"testing"
 
+	querypb "github.com/stackql/stackql-parser/go/vt/proto/query"
+
 	"github.com/golang/protobuf/proto"
-	querypb "vitess.io/vitess/go/vt/proto/query"
 )
 
 func TestEventTokenMinimum(t *testing.T) {

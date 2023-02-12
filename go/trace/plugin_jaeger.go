@@ -20,10 +20,11 @@ import (
 	"flag"
 	"io"
 
+	"github.com/stackql/stackql-parser/go/vt/log"
+
 	"github.com/opentracing/opentracing-go"
 	"github.com/uber/jaeger-client-go"
 	"github.com/uber/jaeger-client-go/config"
-	"vitess.io/vitess/go/vt/log"
 )
 
 /*

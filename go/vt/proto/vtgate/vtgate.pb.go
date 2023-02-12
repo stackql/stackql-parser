@@ -8,10 +8,10 @@ import (
 	math "math"
 
 	proto "github.com/golang/protobuf/proto"
-	binlogdata "vitess.io/vitess/go/vt/proto/binlogdata"
-	query "vitess.io/vitess/go/vt/proto/query"
-	topodata "vitess.io/vitess/go/vt/proto/topodata"
-	vtrpc "vitess.io/vitess/go/vt/proto/vtrpc"
+	binlogdata "github.com/stackql/stackql-parser/go/vt/proto/binlogdata"
+	query "github.com/stackql/stackql-parser/go/vt/proto/query"
+	topodata "github.com/stackql/stackql-parser/go/vt/proto/topodata"
+	vtrpc "github.com/stackql/stackql-parser/go/vt/proto/vtrpc"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
