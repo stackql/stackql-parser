@@ -3794,7 +3794,6 @@ reserved_keyword:
 | IS
 | JOIN
 | JSON_TABLE
-| KEY
 | LAG
 | LAST_VALUE
 | LATERAL
@@ -3926,6 +3925,7 @@ non_reserved_keyword:
 | INDEXES
 | ISOLATION
 | JSON
+| KEY
 | KEY_BLOCK_SIZE
 | KEYS
 | LANGUAGE
