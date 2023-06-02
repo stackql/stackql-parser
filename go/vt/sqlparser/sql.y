@@ -711,7 +711,7 @@ create_statement:
     if $3 != 0 {
       notExists = true
     }
-    $$ = &DBDDL{Action: CreateStr, DBName: string($4.String()), NotExists: notExists}
+    $$ = &DBDDL{Action: CreateStr, DBName: string($4.String()), IfNotExists: notExists}
   }
 | CREATE SCHEMA not_exists_opt id_or_var ddl_skip_to_end
   {
@@ -719,7 +719,7 @@ create_statement:
     if $3 != 0 {
       notExists = true
     }
-    $$ = &DBDDL{Action: CreateStr, DBName: string($4.String()), NotExists: notExists}
+    $$ = &DBDDL{Action: CreateStr, DBName: string($4.String()), IfNotExists: notExists}
   }
 
 infraql_opt:
@@ -847,7 +847,7 @@ create_table_prefix:
     if $3 != 0 {
       notExists = true
     }
-    $$ = &DDL{Action: CreateStr, Table: $4, NotExists: notExists}
+    $$ = &DDL{Action: CreateStr, Table: $4, IfNotExists: notExists}
     setDDL(yylex, $$)
   }
 

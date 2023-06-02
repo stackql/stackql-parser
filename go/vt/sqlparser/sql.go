@@ -4365,7 +4365,7 @@ yydefault:
 			if yyDollar[3].byt != 0 {
 				notExists = true
 			}
-			yyVAL.statement = &DBDDL{Action: CreateStr, DBName: string(yyDollar[4].colIdent.String()), NotExists: notExists}
+			yyVAL.statement = &DBDDL{Action: CreateStr, DBName: string(yyDollar[4].colIdent.String()), IfNotExists: notExists}
 		}
 	case 88:
 		yyDollar = yyS[yypt-5 : yypt+1]
@@ -4375,7 +4375,7 @@ yydefault:
 			if yyDollar[3].byt != 0 {
 				notExists = true
 			}
-			yyVAL.statement = &DBDDL{Action: CreateStr, DBName: string(yyDollar[4].colIdent.String()), NotExists: notExists}
+			yyVAL.statement = &DBDDL{Action: CreateStr, DBName: string(yyDollar[4].colIdent.String()), IfNotExists: notExists}
 		}
 	case 89:
 		yyDollar = yyS[yypt-0 : yypt+1]
@@ -4525,7 +4525,7 @@ yydefault:
 			if yyDollar[3].byt != 0 {
 				notExists = true
 			}
-			yyVAL.ddl = &DDL{Action: CreateStr, Table: yyDollar[4].tableName, NotExists: notExists}
+			yyVAL.ddl = &DDL{Action: CreateStr, Table: yyDollar[4].tableName, IfNotExists: notExists}
 			setDDL(yylex, yyVAL.ddl)
 		}
 	case 113:

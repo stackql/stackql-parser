@@ -220,6 +220,7 @@ type (
 
 		// The following fields are set if a DDL was fully analyzed.
 		IfExists      bool
+		IfNotExists   bool
 		TableSpec     *TableSpec
 		OptLike       *OptLike
 		OrReplace     bool
