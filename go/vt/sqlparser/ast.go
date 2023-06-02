@@ -222,6 +222,7 @@ type (
 		IfExists      bool
 		TableSpec     *TableSpec
 		OptLike       *OptLike
+		OrReplace     bool
 		PartitionSpec *PartitionSpec
 
 		// VindexSpec is set for CreateVindexStr, DropVindexStr, AddColVindexStr, DropColVindexStr.
