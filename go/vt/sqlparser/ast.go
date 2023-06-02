@@ -198,11 +198,12 @@ type (
 
 	// DBDDL represents a CREATE, DROP, or ALTER database statement.
 	DBDDL struct {
-		Action   string
-		DBName   string
-		IfExists bool
-		Collate  string
-		Charset  string
+		Action      string
+		DBName      string
+		IfExists    bool
+		IfNotExists bool
+		Collate     string
+		Charset     string
 	}
 
 	// DDL represents a CREATE, ALTER, DROP, RENAME, TRUNCATE or ANALYZE statement.
