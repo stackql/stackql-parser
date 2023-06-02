@@ -198,11 +198,12 @@ type (
 
 	// DBDDL represents a CREATE, DROP, or ALTER database statement.
 	DBDDL struct {
-		Action   string
-		DBName   string
-		IfExists bool
-		Collate  string
-		Charset  string
+		Action      string
+		DBName      string
+		IfExists    bool
+		IfNotExists bool
+		Collate     string
+		Charset     string
 	}
 
 	// DDL represents a CREATE, ALTER, DROP, RENAME, TRUNCATE or ANALYZE statement.
@@ -220,8 +221,10 @@ type (
 
 		// The following fields are set if a DDL was fully analyzed.
 		IfExists      bool
+		IfNotExists   bool
 		TableSpec     *TableSpec
 		OptLike       *OptLike
+		OrReplace     bool
 		PartitionSpec *PartitionSpec
 
 		// VindexSpec is set for CreateVindexStr, DropVindexStr, AddColVindexStr, DropColVindexStr.
