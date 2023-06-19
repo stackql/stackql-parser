@@ -17,6 +17,8 @@ limitations under the License.
 %{
 package sqlparser
 
+import "strings"
+
 func setParseTree(yylex interface{}, stmt Statement) {
   yylex.(*Tokenizer).ParseTree = stmt
 }
@@ -2919,6 +2921,17 @@ value_expression:
     // we'll need to revisit this. The solution
     // will be non-trivial because of grammar conflicts.
     $$ = &IntervalExpr{Expr: $2, Unit: $3.String()}
+  }
+| INTERVAL STRING
+  {
+    inputStr := string($2)
+    stringList := strings.Split(inputStr, " ")
+    if len(stringList) != 2 {
+      yylex.Error("the interval string '" + inputStr + "' is not valid")
+      return 1
+    }
+    stringExpr := NewStrVal([]byte(stringList[0]))
+    $$ = &IntervalExpr{Expr: stringExpr, Unit: stringList[1]}
   }
 | function_call_generic
 | function_call_keyword
