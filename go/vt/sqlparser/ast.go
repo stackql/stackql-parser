@@ -1800,7 +1800,10 @@ func (node *UnaryExpr) Format(buf *TrackedBuffer) {
 
 // Format formats the node.
 func (node *IntervalExpr) Format(buf *TrackedBuffer) {
-	buf.astPrintf(node, "interval %v %s", node.Expr, node.Unit)
+	nb := NewTrackedBuffer(nil)
+	nb.astPrintf(node, "%v", node.Expr)
+	es := strings.Trim(nb.String(), "'")
+	buf.astPrintf(node, "interval '%s %s'", es, node.Unit)
 }
 
 // Format formats the node.
