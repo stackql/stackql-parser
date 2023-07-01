@@ -6652,7 +6652,7 @@ yydefault:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line sql.y:2492
 		{
-			yyVAL.str = LeftJoinStr
+			yyVAL.str = LeftOuterJoinStr
 		}
 	case 466:
 		yyDollar = yyS[yypt-2 : yypt+1]
@@ -6664,7 +6664,7 @@ yydefault:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line sql.y:2500
 		{
-			yyVAL.str = RightJoinStr
+			yyVAL.str = RightOuterJoinStr
 		}
 	case 468:
 		yyDollar = yyS[yypt-2 : yypt+1]

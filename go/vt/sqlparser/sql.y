@@ -2490,7 +2490,7 @@ outer_join:
   }
 | LEFT OUTER JOIN
   {
-    $$ = LeftJoinStr
+    $$ = LeftOuterJoinStr
   }
 | RIGHT JOIN
   {
@@ -2498,7 +2498,7 @@ outer_join:
   }
 | RIGHT OUTER JOIN
   {
-    $$ = RightJoinStr
+    $$ = RightOuterJoinStr
   }
 
 natural_join:
