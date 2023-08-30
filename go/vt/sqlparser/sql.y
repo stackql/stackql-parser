@@ -264,7 +264,7 @@ func skipToEnd(yylex interface{}) {
 %type <str> select_option
 %type <expr> expression
 %type <tableExprs> from_opt table_references
-%type <tableExpr> table_reference table_factor join_table
+%type <tableExpr> table_reference table_factor join_table table_valued_func
 %type <joinCondition> join_condition join_condition_opt on_expression_opt
 %type <tableNames> table_name_list delete_table_list
 %type <str> inner_join outer_join straight_join natural_join
@@ -2352,6 +2352,12 @@ table_reference:
   table_factor
 | join_table
 
+table_valued_func:
+  function_call_generic as_opt_id
+  {
+    $$ = &TableValuedFuncTableExpr{FuncExpr:$1, As: $2}
+  }
+
 table_factor:
   aliased_table_name
   {
@@ -2369,10 +2375,6 @@ table_factor:
   {
     exec := $2.(*Exec)
     $$ = &ExecSubquery{Exec: exec }
-  }
-| function_call_generic as_opt_id
-  {
-    $$ = &TableValuedFuncTableExpr{FuncExpr:$1, As: $2}
   }
 
 derived_table:
