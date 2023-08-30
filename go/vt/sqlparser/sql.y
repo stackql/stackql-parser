@@ -227,6 +227,12 @@ func skipToEnd(yylex interface{}) {
 // Auth tokens
 %token <bytes> AUTH INTERACTIVE LOGIN REVOKE SA SERVICEACCOUNT SLEEP
 
+// View and table modifier tokens
+%token <bytes> MATERIALIZED TEMP TEMPORARY
+
+// Table valued and unnest function tokens
+%token <bytes> JSON_EACH UNNEST
+
 // Registry tokens
 %token <bytes> REGISTRY PULL LIST
 
@@ -264,7 +270,7 @@ func skipToEnd(yylex interface{}) {
 %type <str> select_option
 %type <expr> expression
 %type <tableExprs> from_opt table_references
-%type <tableExpr> table_reference table_factor join_table
+%type <tableExpr> table_reference table_factor join_table table_valued_func
 %type <joinCondition> join_condition join_condition_opt on_expression_opt
 %type <tableNames> table_name_list delete_table_list
 %type <str> inner_join outer_join straight_join natural_join
@@ -277,7 +283,7 @@ func skipToEnd(yylex interface{}) {
 %type <str> compare
 %type <ins> insert_data
 %type <expr> value value_expression num_val
-%type <expr> function_call_keyword function_call_nonkeyword function_call_generic function_call_conflict func_datetime_precision
+%type <expr> function_call_keyword function_call_nonkeyword function_call_generic function_call_conflict func_datetime_precision function_call_table_valued
 %type <str> is_suffix
 %type <colTuple> col_tuple
 %type <exprs> expression_list
@@ -306,7 +312,7 @@ func skipToEnd(yylex interface{}) {
 %type <setExpr> set_expression
 %type <characteristic> transaction_char
 %type <characteristics> transaction_chars
-%type <str> isolation_level
+%type <str> isolation_level view_modifier table_modifier
 %type <bytes> for_from
 %type <str> ignore_opt default_opt
 %type <str> full_opt from_database_opt tables_or_processlist columns_or_fields extended_opt
@@ -682,6 +688,22 @@ set_session_or_global:
     $$ = GlobalStr
   }
 
+table_modifier:
+  TEMP
+  {
+    $$ = TempStr
+  }
+| TEMPORARY
+  {
+    $$ = TemporaryStr
+  }
+
+view_modifier:
+  MATERIALIZED
+  {
+    $$ =  MaterializedStr
+  }
+
 create_statement:
   create_table_prefix table_spec
   {
@@ -706,6 +728,14 @@ create_statement:
 | CREATE OR REPLACE VIEW table_name AS select_statement
   {
     $$ = &DDL{Action: CreateStr, Table: $5.ToViewName(), SelectStatement: $7, OrReplace: true }
+  }
+| CREATE view_modifier VIEW table_name AS select_statement
+  {
+    $$ = &DDL{Action: CreateStr, Table: $4.ToViewName(), SelectStatement: $6, Modifier: $2 }
+  }
+| CREATE OR REPLACE view_modifier VIEW table_name AS select_statement
+  {
+    $$ = &DDL{Action: CreateStr, Table: $6.ToViewName(), SelectStatement: $8, OrReplace: true, Modifier: $4 }
   }
 | CREATE DATABASE not_exists_opt id_or_var ddl_skip_to_end
   {
@@ -849,7 +879,16 @@ create_table_prefix:
     if $3 != 0 {
       notExists = true
     }
-    $$ = &DDL{Action: CreateStr, Table: $4, IfNotExists: notExists}
+    $$ = &DDL{Action: CreateStr, Table: $4, IfNotExists: notExists }
+    setDDL(yylex, $$)
+  }
+| CREATE table_modifier TABLE not_exists_opt table_name
+  {
+    var notExists bool
+    if $4 != 0 {
+      notExists = true
+    }
+    $$ = &DDL{Action: CreateStr, Table: $5, IfNotExists: notExists, Modifier: $2}
     setDDL(yylex, $$)
   }
 
@@ -2329,6 +2368,13 @@ table_references:
 table_reference:
   table_factor
 | join_table
+| table_valued_func
+
+table_valued_func:
+  function_call_table_valued as_opt_id
+  {
+    $$ = &TableValuedFuncTableExpr{FuncExpr:$1, As: $2}
+  }
 
 table_factor:
   aliased_table_name
@@ -2937,6 +2983,12 @@ value_expression:
 | function_call_keyword
 | function_call_nonkeyword
 | function_call_conflict
+
+function_call_table_valued:
+  JSON_EACH openb select_expression_list_opt closeb
+  {
+    $$ = &FuncExpr{Name: NewColIdent(string($1)), Exprs: $3}
+  }
 
 /*
   Regular function calls without special token or syntax, guaranteed to not
@@ -3950,6 +4002,7 @@ non_reserved_keyword:
 | INDEXES
 | ISOLATION
 | JSON
+| JSON_EACH
 | KEY
 | KEY_BLOCK_SIZE
 | KEYS
@@ -3966,6 +4019,7 @@ non_reserved_keyword:
 | MASTER_PUBLIC_KEY_PATH
 | MASTER_TLS_CIPHERSUITES
 | MASTER_ZSTD_COMPRESSION_LEVEL
+| MATERIALIZED
 | MEDIUMBLOB
 | MEDIUMINT
 | MEDIUMTEXT
@@ -4043,6 +4097,8 @@ non_reserved_keyword:
 | START
 | STATUS
 | TABLES
+| TEMP
+| TEMPORARY
 | TEXT
 | THAN
 | THREAD_PRIORITY

@@ -783,6 +783,14 @@ func (r *replaceTableSpecIndexes) inc() {
 	*r++
 }
 
+func replaceTableValuedFuncTableExprAs(newNode, parent SQLNode) {
+	parent.(*TableValuedFuncTableExpr).As = newNode.(TableIdent)
+}
+
+func replaceTableValuedFuncTableExprFuncExpr(newNode, parent SQLNode) {
+	parent.(*TableValuedFuncTableExpr).FuncExpr = newNode.(Expr)
+}
+
 func replaceTimestampFuncExprExpr1(newNode, parent SQLNode) {
 	parent.(*TimestampFuncExpr).Expr1 = newNode.(Expr)
 }
@@ -1404,6 +1412,10 @@ func (a *application) apply(parent, node SQLNode, replacer replacerFunc) {
 			a.apply(node, item, replacerIndexesB.replace)
 			replacerIndexesB.inc()
 		}
+
+	case *TableValuedFuncTableExpr:
+		a.apply(node, n.As, replaceTableValuedFuncTableExprAs)
+		a.apply(node, n.FuncExpr, replaceTableValuedFuncTableExprFuncExpr)
 
 	case *TimestampFuncExpr:
 		a.apply(node, n.Expr1, replaceTimestampFuncExprExpr1)
