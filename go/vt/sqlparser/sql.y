@@ -225,7 +225,7 @@ func skipToEnd(yylex interface{}) {
 %token <bytes> FORMAT TREE VITESS TRADITIONAL
 
 // Auth tokens
-%token <bytes> AUTH INTERACTIVE LOGIN REVOKE SA SERVICEACCOUNT SLEEP
+%token <bytes> AUTH INTERACTIVE LOGIN MATERIALIZED REVOKE SA SERVICEACCOUNT SLEEP TEMP TEMPORARY
 
 // Registry tokens
 %token <bytes> REGISTRY PULL LIST
@@ -306,7 +306,7 @@ func skipToEnd(yylex interface{}) {
 %type <setExpr> set_expression
 %type <characteristic> transaction_char
 %type <characteristics> transaction_chars
-%type <str> isolation_level
+%type <str> isolation_level view_modifier_opt table_modifier_opt
 %type <bytes> for_from
 %type <str> ignore_opt default_opt
 %type <str> full_opt from_database_opt tables_or_processlist columns_or_fields extended_opt
@@ -682,6 +682,28 @@ set_session_or_global:
     $$ = GlobalStr
   }
 
+table_modifier_opt:
+  {
+    $$ = ""
+  }
+| TEMP
+  {
+    $$ = TempStr
+  }
+| TEMPORARY
+  {
+    $$ = TemporaryStr
+  }
+
+view_modifier_opt:
+  {
+    $$ = ""
+  }
+| MATERIALIZED
+  {
+    $$ =  MaterializedStr
+  }
+
 create_statement:
   create_table_prefix table_spec
   {
@@ -699,13 +721,13 @@ create_statement:
     // Change this to an alter statement
     $$ = &DDL{Action: AlterStr, Table: $7}
   }
-| CREATE VIEW table_name AS select_statement
+| CREATE view_modifier_opt VIEW table_name AS select_statement
   {
-    $$ = &DDL{Action: CreateStr, Table: $3.ToViewName(), SelectStatement: $5 }
+    $$ = &DDL{Action: CreateStr, Table: $4.ToViewName(), SelectStatement: $6, Modifier: $2 }
   }
-| CREATE OR REPLACE VIEW table_name AS select_statement
+| CREATE OR REPLACE view_modifier_opt VIEW table_name AS select_statement
   {
-    $$ = &DDL{Action: CreateStr, Table: $5.ToViewName(), SelectStatement: $7, OrReplace: true }
+    $$ = &DDL{Action: CreateStr, Table: $6.ToViewName(), SelectStatement: $8, OrReplace: true, Modifier: $4 }
   }
 | CREATE DATABASE not_exists_opt id_or_var ddl_skip_to_end
   {
@@ -843,13 +865,13 @@ vindex_param:
   }
 
 create_table_prefix:
-  CREATE TABLE not_exists_opt table_name
+  CREATE table_modifier_opt TABLE not_exists_opt table_name
   {
     var notExists bool
-    if $3 != 0 {
+    if $4 != 0 {
       notExists = true
     }
-    $$ = &DDL{Action: CreateStr, Table: $4, IfNotExists: notExists}
+    $$ = &DDL{Action: CreateStr, Table: $5, IfNotExists: notExists, Modifier: $2}
     setDDL(yylex, $$)
   }
 
@@ -2347,6 +2369,10 @@ table_factor:
   {
     exec := $2.(*Exec)
     $$ = &ExecSubquery{Exec: exec }
+  }
+| function_call_generic as_opt_id
+  {
+    $$ = &TableValuedFuncTableExpr{FuncExpr:$1, As: $2}
   }
 
 derived_table:
@@ -3966,6 +3992,7 @@ non_reserved_keyword:
 | MASTER_PUBLIC_KEY_PATH
 | MASTER_TLS_CIPHERSUITES
 | MASTER_ZSTD_COMPRESSION_LEVEL
+| MATERIALIZED
 | MEDIUMBLOB
 | MEDIUMINT
 | MEDIUMTEXT
@@ -4043,6 +4070,8 @@ non_reserved_keyword:
 | START
 | STATUS
 | TABLES
+| TEMP
+| TEMPORARY
 | TEXT
 | THAN
 | THREAD_PRIORITY

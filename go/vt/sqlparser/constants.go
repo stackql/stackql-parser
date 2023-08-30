@@ -84,6 +84,13 @@ const (
 	IgnoreStr = "ignore "
 	ForceStr  = "force "
 
+	// Table Modifiers
+	TempStr      = "temp"
+	TemporaryStr = "temporary"
+
+	// View Modifiers
+	MaterializedStr = "materialized"
+
 	// Where.Type
 	WhereStr  = "where"
 	HavingStr = "having"
