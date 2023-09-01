@@ -2362,6 +2362,7 @@ table_references:
 table_reference:
   table_factor
 | join_table
+| table_valued_func
 
 table_valued_func:
   function_call_generic as_opt_id
