@@ -723,13 +723,13 @@ create_statement:
   {
     $$ = &DDL{Action: CreateStr, Table: $5.ToViewName(), SelectStatement: $7, OrReplace: true }
   }
-| CREATE MATERIALIZED VIEW table_name AS select_statement
+| CREATE view_modifier VIEW table_name AS select_statement
   {
-    $$ = &DDL{Action: CreateStr, Table: $4.ToViewName(), SelectStatement: $6, Modifier: MaterializedStr }
+    $$ = &DDL{Action: CreateStr, Table: $4.ToViewName(), SelectStatement: $6, Modifier: $2 }
   }
-| CREATE OR REPLACE MATERIALIZED VIEW table_name AS select_statement
+| CREATE OR REPLACE view_modifier VIEW table_name AS select_statement
   {
-    $$ = &DDL{Action: CreateStr, Table: $6.ToViewName(), SelectStatement: $8, OrReplace: true, Modifier: MaterializedStr }
+    $$ = &DDL{Action: CreateStr, Table: $6.ToViewName(), SelectStatement: $8, OrReplace: true, Modifier: $4 }
   }
 | CREATE DATABASE not_exists_opt id_or_var ddl_skip_to_end
   {
