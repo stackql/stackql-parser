@@ -236,6 +236,7 @@ var keywords = map[string]int{
 	"iterate":             UNUSED,
 	"join":                JOIN,
 	"json":                JSON,
+	"json_each":           JSON_EACH,
 	"key":                 KEY,
 	"keys":                KEYS,
 	"key_block_size":      KEY_BLOCK_SIZE,

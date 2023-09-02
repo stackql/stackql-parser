@@ -225,7 +225,13 @@ func skipToEnd(yylex interface{}) {
 %token <bytes> FORMAT TREE VITESS TRADITIONAL
 
 // Auth tokens
-%token <bytes> AUTH INTERACTIVE LOGIN MATERIALIZED REVOKE SA SERVICEACCOUNT SLEEP TEMP TEMPORARY
+%token <bytes> AUTH INTERACTIVE LOGIN REVOKE SA SERVICEACCOUNT SLEEP
+
+// View and table modifier tokens
+%token <bytes> MATERIALIZED TEMP TEMPORARY
+
+// Table valued and unnest function tokens
+%token <bytes> JSON_EACH UNNEST
 
 // Registry tokens
 %token <bytes> REGISTRY PULL LIST
@@ -277,7 +283,7 @@ func skipToEnd(yylex interface{}) {
 %type <str> compare
 %type <ins> insert_data
 %type <expr> value value_expression num_val
-%type <expr> function_call_keyword function_call_nonkeyword function_call_generic function_call_conflict func_datetime_precision
+%type <expr> function_call_keyword function_call_nonkeyword function_call_generic function_call_conflict func_datetime_precision function_call_table_valued
 %type <str> is_suffix
 %type <colTuple> col_tuple
 %type <exprs> expression_list
@@ -2365,7 +2371,7 @@ table_reference:
 | table_valued_func
 
 table_valued_func:
-  function_call_generic as_opt_id
+  function_call_table_valued as_opt_id
   {
     $$ = &TableValuedFuncTableExpr{FuncExpr:$1, As: $2}
   }
@@ -2977,6 +2983,12 @@ value_expression:
 | function_call_keyword
 | function_call_nonkeyword
 | function_call_conflict
+
+function_call_table_valued:
+  JSON_EACH openb select_expression_list_opt closeb
+  {
+    $$ = &FuncExpr{Name: string($1), Exprs: $3}
+  }
 
 /*
   Regular function calls without special token or syntax, guaranteed to not
@@ -3990,6 +4002,7 @@ non_reserved_keyword:
 | INDEXES
 | ISOLATION
 | JSON
+| JSON_EACH
 | KEY
 | KEY_BLOCK_SIZE
 | KEYS
