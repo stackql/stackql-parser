@@ -1024,7 +1024,11 @@ func (node *ParenSelect) Format(buf *TrackedBuffer) {
 
 // Format formats the node.
 func (node *TableValuedFuncTableExpr) Format(buf *TrackedBuffer) {
-	buf.astPrintf(node, "%v", node.FuncExpr)
+	if node.As.IsEmpty() {
+		buf.astPrintf(node, "%v", node.FuncExpr)
+		return
+	}
+	buf.astPrintf(node, "%v as \"%v\"", node.FuncExpr, node.As)
 }
 
 // Format formats the node.
