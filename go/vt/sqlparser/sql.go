@@ -7409,7 +7409,7 @@ yydefault:
 		yyDollar = yyS[yypt-4 : yypt+1]
 //line sql.y:2989
 		{
-			yyVAL.expr = &FuncExpr{Name: string(yyDollar[1].bytes), Exprs: yyDollar[3].selectExprs}
+			yyVAL.expr = &FuncExpr{Name: NewColIdent(string(yyDollar[1].bytes)), Exprs: yyDollar[3].selectExprs}
 		}
 	case 574:
 		yyDollar = yyS[yypt-4 : yypt+1]

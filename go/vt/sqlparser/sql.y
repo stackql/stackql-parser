@@ -2987,7 +2987,7 @@ value_expression:
 function_call_table_valued:
   JSON_EACH openb select_expression_list_opt closeb
   {
-    $$ = &FuncExpr{Name: string($1), Exprs: $3}
+    $$ = &FuncExpr{Name: NewColIdent(string($1)), Exprs: $3}
   }
 
 /*
