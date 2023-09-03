@@ -185,4 +185,8 @@ const (
 	// Auth constants
 	InteractiveStr    = "interactive"
 	ServiceAccountStr = "serviceaccount"
+
+	// Cardinality increase functions
+	JsonEachStr              = "json_each"
+	JsonArrayElementsTextStr = "json_array_elements_text"
 )

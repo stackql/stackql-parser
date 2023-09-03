@@ -231,7 +231,7 @@ func skipToEnd(yylex interface{}) {
 %token <bytes> MATERIALIZED TEMP TEMPORARY
 
 // Table valued and unnest function tokens
-%token <bytes> JSON_EACH UNNEST
+%token <bytes> JSON_ARRAY_ELEMENTS_TEXT JSON_EACH UNNEST
 
 // Registry tokens
 %token <bytes> REGISTRY PULL LIST
@@ -263,6 +263,7 @@ func skipToEnd(yylex interface{}) {
 %type <bytes> explain_synonyms
 %type <str> distinct_opt cache_opt match_option separator_opt
 %type <str> auth_type
+%type <str> cardinality_expansion_function_name
 %type <expr> like_escape_opt
 %type <selectExprs> select_expression_list select_expression_list_opt
 %type <selectExpr> select_expression
@@ -2985,9 +2986,19 @@ value_expression:
 | function_call_conflict
 
 function_call_table_valued:
-  JSON_EACH openb select_expression_list_opt closeb
+  cardinality_expansion_function_name openb select_expression_list_opt closeb
   {
-    $$ = &FuncExpr{Name: NewColIdent(string($1)), Exprs: $3}
+    $$ = &FuncExpr{Name: NewColIdent($1), Exprs: $3}
+  }
+
+cardinality_expansion_function_name:
+  JSON_ARRAY_ELEMENTS_TEXT
+  {
+    $$ = JsonArrayElementsTextStr
+  }
+| JSON_EACH
+  {
+    $$ = JsonEachStr
   }
 
 /*
@@ -4002,6 +4013,7 @@ non_reserved_keyword:
 | INDEXES
 | ISOLATION
 | JSON
+| JSON_ARRAY_ELEMENTS_TEXT
 | JSON_EACH
 | KEY
 | KEY_BLOCK_SIZE
