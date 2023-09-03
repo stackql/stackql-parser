@@ -230,6 +230,9 @@ func skipToEnd(yylex interface{}) {
 // View and table modifier tokens
 %token <bytes> MATERIALIZED TEMP TEMPORARY
 
+// Materialized view admin tokens
+%token <bytes> REFRESH
+
 // Table valued and unnest function tokens
 %token <bytes> JSON_ARRAY_ELEMENTS_TEXT JSON_EACH UNNEST
 
@@ -252,7 +255,7 @@ func skipToEnd(yylex interface{}) {
 %type <selStmt> simple_select select_statement base_select union_rhs
 %type <statement> explain_statement explainable_statement
 %type <statement> stream_statement insert_statement update_statement delete_statement set_statement set_transaction_statement
-%type <statement> create_statement alter_statement rename_statement drop_statement truncate_statement flush_statement do_statement
+%type <statement> create_statement alter_statement rename_statement drop_statement truncate_statement flush_statement do_statement refresh_stmt
 %type <ddl> create_table_prefix rename_list
 %type <statement> analyze_statement show_statement use_statement other_statement
 %type <statement> begin_statement commit_statement rollback_statement savepoint_statement release_statement
@@ -415,6 +418,7 @@ command:
 | sleep_stmt
 | purge_stmt
 | nativequery_stmt
+| refresh_stmt
 | /*empty*/
 {
   setParseTree(yylex, nil)
@@ -753,6 +757,12 @@ create_statement:
       notExists = true
     }
     $$ = &DBDDL{Action: CreateStr, DBName: string($4.String()), IfNotExists: notExists}
+  }
+
+refresh_stmt:
+  REFRESH MATERIALIZED VIEW table_name
+  {
+    $$ = &RefreshMaterializedView{ViewName: $4}
   }
 
 infraql_opt:
@@ -1744,6 +1754,14 @@ drop_statement:
           exists = true
         }
     $$ = &DDL{Action: DropStr, FromTables: TableNames{$4.ToViewName()}, IfExists: exists}
+  }
+| DROP view_modifier VIEW exists_opt table_name ddl_skip_to_end
+  {
+    var exists bool
+        if $4 != 0 {
+          exists = true
+        }
+    $$ = &DDL{Action: DropStr, FromTables: TableNames{$5.ToViewName()}, IfExists: exists, Modifier: $2}
   }
 | DROP DATABASE exists_opt id_or_var
   {
@@ -4077,6 +4095,7 @@ non_reserved_keyword:
 | REAL
 | REFERENCE
 | REFERENCES
+| REFRESH
 | REORGANIZE
 | REPAIR
 | REPEATABLE

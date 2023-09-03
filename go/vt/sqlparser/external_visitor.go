@@ -75,6 +75,7 @@ func (node *NativeQuery) Accept(vis SQLAstVisitor) error              { return v
 func (node *RangeCond) Accept(vis SQLAstVisitor) error                { return vis.Visit(node) }
 func (node ReferenceAction) Accept(vis SQLAstVisitor) error           { return vis.Visit(node) }
 func (node *Registry) Accept(vis SQLAstVisitor) error                 { return vis.Visit(node) }
+func (node *RefreshMaterializedView) Accept(vis SQLAstVisitor) error  { return vis.Visit(node) }
 func (node *Release) Accept(vis SQLAstVisitor) error                  { return vis.Visit(node) }
 func (node *Rollback) Accept(vis SQLAstVisitor) error                 { return vis.Visit(node) }
 func (node *SQLVal) Accept(vis SQLAstVisitor) error                   { return vis.Visit(node) }
