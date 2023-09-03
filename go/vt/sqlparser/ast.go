@@ -206,6 +206,12 @@ type (
 		Charset     string
 	}
 
+	RefreshMaterializedView struct {
+		Concurrently bool
+		ViewName     TableName
+		WithData     bool
+	}
+
 	// DDL represents a CREATE, ALTER, DROP, RENAME, TRUNCATE or ANALYZE statement.
 	DDL struct {
 		Action string
@@ -333,38 +339,39 @@ type (
 	OtherAdmin struct{}
 )
 
-func (*Union) iStatement()             {}
-func (*Select) iStatement()            {}
-func (*Stream) iStatement()            {}
-func (*Insert) iStatement()            {}
-func (*Update) iStatement()            {}
-func (*Delete) iStatement()            {}
-func (*Set) iStatement()               {}
-func (*SetTransaction) iStatement()    {}
-func (*DBDDL) iStatement()             {}
-func (*DDL) iStatement()               {}
-func (*Show) iStatement()              {}
-func (*Use) iStatement()               {}
-func (*Begin) iStatement()             {}
-func (*Commit) iStatement()            {}
-func (*Rollback) iStatement()          {}
-func (*SRollback) iStatement()         {}
-func (*Savepoint) iStatement()         {}
-func (*Release) iStatement()           {}
-func (*Explain) iStatement()           {}
-func (*OtherRead) iStatement()         {}
-func (*Auth) iStatement()              {}
-func (*Registry) iStatement()          {}
-func (*AuthRevoke) iStatement()        {}
-func (*Exec) iStatement()              {}
-func (*Purge) iStatement()             {}
-func (*NativeQuery) iStatement()       {}
-func (*DescribeTable) iStatement()     {}
-func (*OtherAdmin) iStatement()        {}
-func (*Select) iSelectStatement()      {}
-func (*Union) iSelectStatement()       {}
-func (*ParenSelect) iSelectStatement() {}
-func (*Sleep) iStatement()             {}
+func (*Union) iStatement()                   {}
+func (*Select) iStatement()                  {}
+func (*Stream) iStatement()                  {}
+func (*Insert) iStatement()                  {}
+func (*Update) iStatement()                  {}
+func (*Delete) iStatement()                  {}
+func (*Set) iStatement()                     {}
+func (*SetTransaction) iStatement()          {}
+func (*DBDDL) iStatement()                   {}
+func (*DDL) iStatement()                     {}
+func (*Show) iStatement()                    {}
+func (*Use) iStatement()                     {}
+func (*Begin) iStatement()                   {}
+func (*Commit) iStatement()                  {}
+func (*Rollback) iStatement()                {}
+func (*SRollback) iStatement()               {}
+func (*Savepoint) iStatement()               {}
+func (*Release) iStatement()                 {}
+func (*Explain) iStatement()                 {}
+func (*OtherRead) iStatement()               {}
+func (*Auth) iStatement()                    {}
+func (*Registry) iStatement()                {}
+func (*AuthRevoke) iStatement()              {}
+func (*Exec) iStatement()                    {}
+func (*Purge) iStatement()                   {}
+func (*NativeQuery) iStatement()             {}
+func (*DescribeTable) iStatement()           {}
+func (*OtherAdmin) iStatement()              {}
+func (*Select) iSelectStatement()            {}
+func (*Union) iSelectStatement()             {}
+func (*ParenSelect) iSelectStatement()       {}
+func (*RefreshMaterializedView) iStatement() {}
+func (*Sleep) iStatement()                   {}
 
 // ParenSelect can actually not be a top level statement,
 // but we have to allow it because it's a requirement
@@ -1136,6 +1143,18 @@ func (node *DBDDL) Format(buf *TrackedBuffer) {
 		}
 		buf.WriteString(fmt.Sprintf("%s database%s %v", node.Action, exists, node.DBName))
 	}
+}
+
+func (node *RefreshMaterializedView) Format(buf *TrackedBuffer) {
+	if node.Concurrently {
+		buf.astPrintf(node, "refresh materialized view concurrently %v", node.ViewName)
+		return
+	}
+	if !node.WithData {
+		buf.astPrintf(node, "refresh materialized view %v with no data", node.ViewName)
+		return
+	}
+	buf.astPrintf(node, "refresh materialized view %v", node.ViewName)
 }
 
 // Format formats the node.
