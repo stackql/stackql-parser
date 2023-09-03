@@ -238,6 +238,9 @@ type (
 
 		// SelectStatement is set for Create View.
 		SelectStatement SelectStatement
+
+		// Modifier is optional for Create View and Create Table.
+		Modifier string
 	}
 
 	// ParenSelect is a parenthesized SELECT statement.
@@ -579,13 +582,20 @@ type (
 	ParenTableExpr struct {
 		Exprs TableExprs
 	}
+
+	// TableValuedFuncTableExpr represents a call to a table-valued function.
+	TableValuedFuncTableExpr struct {
+		FuncExpr Expr
+		As       TableIdent
+	}
 )
 
-func (*AliasedTableExpr) iTableExpr() {}
-func (*ParenTableExpr) iTableExpr()   {}
-func (*JoinTableExpr) iTableExpr()    {}
-func (*ExecSubquery) iTableExpr()     {}
-func (*Union) iTableExpr()            {}
+func (*AliasedTableExpr) iTableExpr()         {}
+func (*ParenTableExpr) iTableExpr()           {}
+func (*JoinTableExpr) iTableExpr()            {}
+func (*ExecSubquery) iTableExpr()             {}
+func (*Union) iTableExpr()                    {}
+func (*TableValuedFuncTableExpr) iTableExpr() {}
 
 type (
 	// SimpleTableExpr represents a simple table expression.
@@ -1010,6 +1020,15 @@ func (node *ExecSubquery) Format(buf *TrackedBuffer) {
 // Format formats the node.
 func (node *ParenSelect) Format(buf *TrackedBuffer) {
 	buf.astPrintf(node, "(%v)", node.Select)
+}
+
+// Format formats the node.
+func (node *TableValuedFuncTableExpr) Format(buf *TrackedBuffer) {
+	if node.As.IsEmpty() {
+		buf.astPrintf(node, "%v", node.FuncExpr)
+		return
+	}
+	buf.astPrintf(node, "%v as \"%v\"", node.FuncExpr, node.As)
 }
 
 // Format formats the node.
