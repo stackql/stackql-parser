@@ -383,6 +383,7 @@ var keywords = map[string]int{
 	"temporary":                TEMPORARY,
 	"than":                     THAN,
 	"then":                     THEN,
+	"text":                     TEXT,
 	"time":                     TIME,
 	"timestamp":                TIMESTAMP,
 	"timestampadd":             TIMESTAMPADD,
