@@ -1755,6 +1755,14 @@ drop_statement:
         }
     $$ = &DDL{Action: DropStr, FromTables: TableNames{$4.ToViewName()}, IfExists: exists}
   }
+| DROP view_modifier VIEW exists_opt table_name ddl_skip_to_end
+  {
+    var exists bool
+        if $4 != 0 {
+          exists = true
+        }
+    $$ = &DDL{Action: DropStr, FromTables: TableNames{$5.ToViewName()}, IfExists: exists, Modifier: $2}
+  }
 | DROP DATABASE exists_opt id_or_var
   {
     $$ = &DBDDL{Action: DropStr, DBName: string($4.String())}
