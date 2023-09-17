@@ -207,9 +207,10 @@ type (
 	}
 
 	RefreshMaterializedView struct {
-		Concurrently bool
-		ViewName     TableName
-		WithData     bool
+		Concurrently   bool
+		ViewName       TableName
+		WithData       bool
+		ImplicitSelect SelectStatement // This is mutated during analysis.
 	}
 
 	// DDL represents a CREATE, ALTER, DROP, RENAME, TRUNCATE or ANALYZE statement.

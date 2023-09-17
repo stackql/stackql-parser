@@ -555,6 +555,10 @@ func replaceRangeCondTo(newNode, parent SQLNode) {
 	parent.(*RangeCond).To = newNode.(Expr)
 }
 
+func replaceRefreshMaterializedViewImplicitSelect(newNode, parent SQLNode) {
+	parent.(*RefreshMaterializedView).ImplicitSelect = newNode.(SelectStatement)
+}
+
 func replaceRefreshMaterializedViewViewName(newNode, parent SQLNode) {
 	parent.(*RefreshMaterializedView).ViewName = newNode.(TableName)
 }
@@ -1286,6 +1290,7 @@ func (a *application) apply(parent, node SQLNode, replacer replacerFunc) {
 	case ReferenceAction:
 
 	case *RefreshMaterializedView:
+		a.apply(node, n.ImplicitSelect, replaceRefreshMaterializedViewImplicitSelect)
 		a.apply(node, n.ViewName, replaceRefreshMaterializedViewViewName)
 
 	case *Registry:
