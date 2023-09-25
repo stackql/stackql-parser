@@ -1740,7 +1740,7 @@ drop_statement:
     if $3 != 0 {
       exists = true
     }
-    $$ = &DDL{Action: DropStr, FromTables: $4, IfExists: exists}
+    $$ = &DDL{Action: DropStr, FromTables: $4, IfExists: exists, Modifier: "table"}
   }
 | DROP INDEX id_or_var ON table_name ddl_skip_to_end
   {
