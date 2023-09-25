@@ -5835,7 +5835,7 @@ yydefault:
 			if yyDollar[3].byt != 0 {
 				exists = true
 			}
-			yyVAL.statement = &DDL{Action: DropStr, FromTables: yyDollar[4].tableNames, IfExists: exists}
+			yyVAL.statement = &DDL{Action: DropStr, FromTables: yyDollar[4].tableNames, IfExists: exists, Modifier: "table"}
 		}
 	case 301:
 		yyDollar = yyS[yypt-6 : yypt+1]
