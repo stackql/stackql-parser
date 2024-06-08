@@ -36,6 +36,7 @@ type TrackedBuffer struct {
 	*strings.Builder
 	bindLocations []bindLocation
 	nodeFormatter NodeFormatter
+	isDelimitCols bool
 }
 
 // NewTrackedBuffer creates a new TrackedBuffer.
@@ -44,6 +45,15 @@ func NewTrackedBuffer(nodeFormatter NodeFormatter) *TrackedBuffer {
 		Builder:       new(strings.Builder),
 		nodeFormatter: nodeFormatter,
 	}
+}
+
+func (buf *TrackedBuffer) IsDelimitCols() bool {
+	return buf.isDelimitCols
+}
+
+func (buf *TrackedBuffer) WithDelimitCols(isDelimitCols bool) *TrackedBuffer {
+	buf.isDelimitCols = isDelimitCols
+	return buf
 }
 
 // WriteNode function, initiates the writing of a single SQLNode tree by passing

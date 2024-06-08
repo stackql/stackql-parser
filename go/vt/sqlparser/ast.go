@@ -1795,7 +1795,16 @@ func (node *ColName) Format(buf *TrackedBuffer) {
 	if !node.Qualifier.IsEmpty() {
 		buf.astPrintf(node, "%v.", node.Qualifier)
 	}
-	buf.astPrintf(node, "%v", node.Name)
+	if !buf.IsDelimitCols() {
+		buf.astPrintf(node, "%v", node.Name)
+		return
+	}
+	if node.Name.IsEmpty() {
+		return
+	}
+	buf.WriteString(`"`)
+	buf.WriteString(node.Name.GetRawVal())
+	buf.WriteString(`"`)
 }
 
 // Format formats the node.

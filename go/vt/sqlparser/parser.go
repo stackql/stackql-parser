@@ -221,3 +221,14 @@ func String(node SQLNode) string {
 	buf.Myprintf("%v", node)
 	return buf.String()
 }
+
+// String returns a string representation of an SQLNode.
+func ColDelimitedString(node SQLNode) string {
+	if node == nil {
+		return "<nil>"
+	}
+
+	buf := NewTrackedBuffer(nil).WithDelimitCols(true)
+	buf.Myprintf("%v", node)
+	return buf.String()
+}
