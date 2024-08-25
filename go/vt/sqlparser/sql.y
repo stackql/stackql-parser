@@ -262,7 +262,7 @@ func skipToEnd(yylex interface{}) {
 %type <statement> auth_statement exec_stmt sleep_stmt registry_stmt purge_stmt nativequery_stmt
 %type <boolVal> infraql_opt
 %type <bytes2> comment_opt comment_list
-%type <str> union_op insert_or_replace update_or_replace explain_format_opt wild_opt
+%type <str> union_op insert_only update_or_replace explain_format_opt wild_opt
 %type <bytes> explain_synonyms
 %type <str> distinct_opt cache_opt match_option separator_opt
 %type <str> auth_type
@@ -535,7 +535,7 @@ union_rhs:
 
 
 insert_statement:
-  insert_or_replace comment_opt ignore_opt into_table_name opt_partition_clause insert_data on_dup_opt
+  insert_only comment_opt ignore_opt into_table_name opt_partition_clause insert_data on_dup_opt
   {
     // insert_data returns a *Insert pre-filled with Columns & Values
     ins := $6
@@ -548,14 +548,10 @@ insert_statement:
     $$ = ins
   }
 
-insert_or_replace:
+insert_only:
   INSERT
   {
     $$ = InsertStr
-  }
-| REPLACE
-  {
-    $$ = ReplaceStr
   }
 
 update_or_replace:
