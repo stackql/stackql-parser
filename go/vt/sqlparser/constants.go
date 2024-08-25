@@ -38,6 +38,7 @@ const (
 	// DDL strings.
 	InsertStr  = "insert"
 	ReplaceStr = "replace"
+	UpdateStr  = "update"
 
 	// Set.Scope or Show.Scope
 	SessionStr        = "session"

@@ -262,7 +262,7 @@ func skipToEnd(yylex interface{}) {
 %type <statement> auth_statement exec_stmt sleep_stmt registry_stmt purge_stmt nativequery_stmt
 %type <boolVal> infraql_opt
 %type <bytes2> comment_opt comment_list
-%type <str> union_op insert_or_replace explain_format_opt wild_opt
+%type <str> union_op insert_or_replace update_or_replace explain_format_opt wild_opt
 %type <bytes> explain_synonyms
 %type <str> distinct_opt cache_opt match_option separator_opt
 %type <str> auth_type
@@ -568,10 +568,20 @@ insert_or_replace:
     $$ = ReplaceStr
   }
 
-update_statement:
-  UPDATE comment_opt ignore_opt table_references SET update_list from_opt where_expression_opt order_by_opt limit_opt
+update_or_replace:
+  UPDATE
   {
-    $$ = &Update{Comments: Comments($2), Ignore: $3, TableExprs: $4, Exprs: $6, From: $7, Where: NewWhere(WhereStr, $8), OrderBy: $9, Limit: $10}
+    $$ = UpdateStr
+  }
+| REPLACE
+  {
+    $$ = ReplaceStr
+  }
+
+update_statement:
+  update_or_replace comment_opt ignore_opt table_references SET update_list from_opt where_expression_opt order_by_opt limit_opt
+  {
+    $$ = &Update{Action: $1, Comments: Comments($2), Ignore: $3, TableExprs: $4, Exprs: $6, From: $7, Where: NewWhere(WhereStr, $8), OrderBy: $9, Limit: $10}
   }
 
 delete_statement:
