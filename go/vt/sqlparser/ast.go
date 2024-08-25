@@ -144,6 +144,7 @@ type (
 	// Update represents an UPDATE statement.
 	// If you add fields here, consider adding them to calls to validateUnshardedRoute.
 	Update struct {
+		Action     string
 		Comments   Comments
 		Ignore     string
 		TableExprs TableExprs
