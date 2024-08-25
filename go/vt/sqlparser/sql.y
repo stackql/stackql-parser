@@ -262,7 +262,7 @@ func skipToEnd(yylex interface{}) {
 %type <statement> auth_statement exec_stmt sleep_stmt registry_stmt purge_stmt nativequery_stmt
 %type <boolVal> infraql_opt
 %type <bytes2> comment_opt comment_list
-%type <str> union_op insert_or_replace explain_format_opt wild_opt
+%type <str> union_op insert_only update_or_replace explain_format_opt wild_opt
 %type <bytes> explain_synonyms
 %type <str> distinct_opt cache_opt match_option separator_opt
 %type <str> auth_type
@@ -535,7 +535,7 @@ union_rhs:
 
 
 insert_statement:
-  insert_or_replace comment_opt ignore_opt into_table_name opt_partition_clause insert_data on_dup_opt
+  insert_only comment_opt ignore_opt into_table_name opt_partition_clause insert_data on_dup_opt
   {
     // insert_data returns a *Insert pre-filled with Columns & Values
     ins := $6
@@ -547,21 +547,17 @@ insert_statement:
     ins.OnDup = OnDup($7)
     $$ = ins
   }
-| insert_or_replace comment_opt ignore_opt into_table_name opt_partition_clause SET update_list on_dup_opt
-  {
-    cols := make(Columns, 0, len($7))
-    vals := make(ValTuple, 0, len($8))
-    for _, updateList := range $7 {
-      cols = append(cols, updateList.Name.Name)
-      vals = append(vals, updateList.Expr)
-    }
-    $$ = &Insert{Action: $1, Comments: Comments($2), Ignore: $3, Table: $4, Partitions: $5, Columns: cols, Rows: Values{vals}, OnDup: OnDup($8)}
-  }
 
-insert_or_replace:
+insert_only:
   INSERT
   {
     $$ = InsertStr
+  }
+
+update_or_replace:
+  UPDATE
+  {
+    $$ = UpdateStr
   }
 | REPLACE
   {
@@ -569,9 +565,9 @@ insert_or_replace:
   }
 
 update_statement:
-  UPDATE comment_opt ignore_opt table_references SET update_list from_opt where_expression_opt order_by_opt limit_opt
+  update_or_replace comment_opt ignore_opt table_references SET update_list from_opt where_expression_opt order_by_opt limit_opt
   {
-    $$ = &Update{Comments: Comments($2), Ignore: $3, TableExprs: $4, Exprs: $6, From: $7, Where: NewWhere(WhereStr, $8), OrderBy: $9, Limit: $10}
+    $$ = &Update{Action: $1, Comments: Comments($2), Ignore: $3, TableExprs: $4, Exprs: $6, From: $7, Where: NewWhere(WhereStr, $8), OrderBy: $9, Limit: $10}
   }
 
 delete_statement:
