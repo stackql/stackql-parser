@@ -3278,6 +3278,10 @@ convert_type:
     $$.Length = $2.Length
     $$.Scale = $2.Scale
   }
+| REAL
+  {
+    $$ = &ConvertType{Type: string($1)}
+  }
 | JSON
   {
     $$ = &ConvertType{Type: string($1)}
