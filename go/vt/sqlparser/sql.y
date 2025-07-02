@@ -251,6 +251,9 @@ func skipToEnd(yylex interface{}) {
 // stackql
 %token <bytes> STACKQL
 
+// returning
+%token <bytes> RETURNING
+
 %type <statement> command
 %type <selStmt> simple_select select_statement base_select union_rhs
 %type <statement> explain_statement explainable_statement
@@ -268,7 +271,7 @@ func skipToEnd(yylex interface{}) {
 %type <str> auth_type
 %type <str> cardinality_expansion_function_name
 %type <expr> like_escape_opt
-%type <selectExprs> select_expression_list select_expression_list_opt
+%type <selectExprs> select_expression_list select_expression_list_opt returning_opt
 %type <selectExpr> select_expression
 %type <strs> select_options
 %type <str> select_option
@@ -535,7 +538,7 @@ union_rhs:
 
 
 insert_statement:
-  insert_only comment_opt ignore_opt into_table_name opt_partition_clause insert_data on_dup_opt
+  insert_only comment_opt ignore_opt into_table_name opt_partition_clause insert_data on_dup_opt returning_opt
   {
     // insert_data returns a *Insert pre-filled with Columns & Values
     ins := $6
@@ -545,6 +548,7 @@ insert_statement:
     ins.Table = $4
     ins.Partitions = $5
     ins.OnDup = OnDup($7)
+    ins.SelectExprs = $8
     $$ = ins
   }
 
@@ -565,27 +569,27 @@ update_or_replace:
   }
 
 update_statement:
-  update_or_replace comment_opt ignore_opt table_references SET update_list from_opt where_expression_opt order_by_opt limit_opt
+  update_or_replace comment_opt ignore_opt table_references SET update_list from_opt where_expression_opt order_by_opt limit_opt returning_opt
   {
-    $$ = &Update{Action: $1, Comments: Comments($2), Ignore: $3, TableExprs: $4, Exprs: $6, From: $7, Where: NewWhere(WhereStr, $8), OrderBy: $9, Limit: $10}
+    $$ = &Update{Action: $1, Comments: Comments($2), Ignore: $3, TableExprs: $4, Exprs: $6, From: $7, Where: NewWhere(WhereStr, $8), OrderBy: $9, Limit: $10, SelectExprs: $11}
   }
 
 delete_statement:
-  DELETE comment_opt FROM table_name opt_partition_clause where_expression_opt order_by_opt limit_opt
+  DELETE comment_opt FROM table_name opt_partition_clause where_expression_opt order_by_opt limit_opt returning_opt
   {
-    $$ = &Delete{Comments: Comments($2), TableExprs:  TableExprs{&AliasedTableExpr{Expr:$4}}, Partitions: $5, Where: NewWhere(WhereStr, $6), OrderBy: $7, Limit: $8}
+    $$ = &Delete{Comments: Comments($2), TableExprs:  TableExprs{&AliasedTableExpr{Expr:$4}}, Partitions: $5, Where: NewWhere(WhereStr, $6), OrderBy: $7, Limit: $8, SelectExprs: $9}
   }
-| DELETE comment_opt FROM table_name_list USING table_references where_expression_opt
+| DELETE comment_opt FROM table_name_list USING table_references where_expression_opt returning_opt
   {
-    $$ = &Delete{Comments: Comments($2), Targets: $4, TableExprs: $6, Where: NewWhere(WhereStr, $7)}
+    $$ = &Delete{Comments: Comments($2), Targets: $4, TableExprs: $6, Where: NewWhere(WhereStr, $7), SelectExprs: $8}
   }
-| DELETE comment_opt table_name_list from_or_using table_references where_expression_opt
+| DELETE comment_opt table_name_list from_or_using table_references where_expression_opt returning_opt
   {
-    $$ = &Delete{Comments: Comments($2), Targets: $3, TableExprs: $5, Where: NewWhere(WhereStr, $6)}
+    $$ = &Delete{Comments: Comments($2), Targets: $3, TableExprs: $5, Where: NewWhere(WhereStr, $6), SelectExprs: $7}
   }
-|DELETE comment_opt delete_table_list from_or_using table_references where_expression_opt
+|DELETE comment_opt delete_table_list from_or_using table_references where_expression_opt returning_opt
   {
-    $$ = &Delete{Comments: Comments($2), Targets: $3, TableExprs: $5, Where: NewWhere(WhereStr, $6)}
+    $$ = &Delete{Comments: Comments($2), Targets: $3, TableExprs: $5, Where: NewWhere(WhereStr, $6), SelectExprs: $7}
   }
 
 from_or_using:
@@ -3559,6 +3563,15 @@ on_dup_opt:
     $$ = $5
   }
 
+returning_opt:
+  {
+    $$ = nil
+  }
+| RETURNING select_expression_list
+  {
+    $$ = $2
+  }
+
 tuple_list:
   tuple_or_empty
   {
@@ -4105,6 +4118,7 @@ non_reserved_keyword:
 | RESPECT
 | RESTART
 | RETAIN
+| RETURNING
 | REUSE
 | REVOKE
 | ROLE

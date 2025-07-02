@@ -335,6 +335,7 @@ var keywords = map[string]int{
 	"resignal":                 UNUSED,
 	"restrict":                 RESTRICT,
 	"return":                   UNUSED,
+	"returning":                RETURNING,
 	"revoke":                   REVOKE,
 	"right":                    RIGHT,
 	"rlike":                    REGEXP,
