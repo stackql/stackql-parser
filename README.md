@@ -10,17 +10,15 @@ There are elements of the original work that are not required, but may take some
 ## Rebuilding parser
 
 
-```
+```bash
 make -C go/vt/sqlparser
 ```
 
 
 After changes to the ast:
 
-```
-cd go/vt/sqlparser
-
-go run ./visitorgen/main -input=ast.go -output=rewriter.go
+```bash
+cicd/build_scripts/01_ast_rebuild.sh
 ```
 
 
