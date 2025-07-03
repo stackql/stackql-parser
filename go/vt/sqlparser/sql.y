@@ -3983,6 +3983,7 @@ reserved_keyword:
 | REGEXP
 | RENAME
 | REPLACE
+| RETURNING
 | RIGHT
 | ROW_NUMBER
 | SCHEMA
@@ -4155,7 +4156,6 @@ non_reserved_keyword:
 | RESPECT
 | RESTART
 | RETAIN
-| RETURNING
 | REUSE
 | REVOKE
 | ROLE
