@@ -271,7 +271,7 @@ func skipToEnd(yylex interface{}) {
 %type <str> auth_type
 %type <str> cardinality_expansion_function_name
 %type <expr> like_escape_opt
-%type <selectExprs> select_expression_list select_expression_list_opt returning_opt
+%type <selectExprs> select_expression_list select_expression_list_opt returning_opt returning
 %type <selectExpr> select_expression
 %type <strs> select_options
 %type <str> select_option
@@ -311,7 +311,7 @@ func skipToEnd(yylex interface{}) {
 %type <str> lock_opt
 %type <columns> ins_column_list column_list opt_column_list
 %type <partitions> opt_partition_clause partition_list
-%type <updateExprs> on_dup_opt
+%type <updateExprs> on_dup_opt on_dup
 %type <updateExprs> update_list
 %type <setExprs> set_list
 %type <bytes> charset_or_character_set
@@ -538,7 +538,7 @@ union_rhs:
 
 
 insert_statement:
-  insert_only comment_opt ignore_opt into_table_name opt_partition_clause insert_data on_dup_opt returning_opt
+  insert_only comment_opt ignore_opt into_table_name opt_partition_clause insert_data on_dup returning_opt
   {
     // insert_data returns a *Insert pre-filled with Columns & Values
     ins := $6
@@ -549,6 +549,31 @@ insert_statement:
     ins.Partitions = $5
     ins.OnDup = OnDup($7)
     ins.SelectExprs = $8
+    $$ = ins
+  }
+| insert_only comment_opt ignore_opt into_table_name opt_partition_clause insert_data returning_opt
+  {
+    // insert_data returns a *Insert pre-filled with Columns & Values
+    ins := $6
+    ins.Action = $1
+    ins.Comments = $2
+    ins.Ignore = $3
+    ins.Table = $4
+    ins.Partitions = $5
+    ins.OnDup = OnDup(nil)
+    ins.SelectExprs = $7
+    $$ = ins
+  }
+| insert_only comment_opt ignore_opt into_table_name opt_partition_clause insert_data on_dup_opt
+  {
+    // insert_data returns a *Insert pre-filled with Columns & Values
+    ins := $6
+    ins.Action = $1
+    ins.Comments = $2
+    ins.Ignore = $3
+    ins.Table = $4
+    ins.Partitions = $5
+    ins.OnDup = OnDup($7)
     $$ = ins
   }
 
@@ -3558,7 +3583,13 @@ on_dup_opt:
   {
     $$ = nil
   }
-| ON DUPLICATE KEY UPDATE update_list
+| on_dup
+  {
+    $$ = $1
+  }
+
+on_dup:
+  ON DUPLICATE KEY UPDATE update_list
   {
     $$ = $5
   }
@@ -3567,7 +3598,13 @@ returning_opt:
   {
     $$ = nil
   }
-| RETURNING select_expression_list
+| returning
+  {
+    $$ = $1
+  }
+
+returning:
+  RETURNING select_expression_list
   {
     $$ = $2
   }
