@@ -551,7 +551,7 @@ insert_statement:
     ins.SelectExprs = $8
     $$ = ins
   }
-| insert_only comment_opt ignore_opt into_table_name opt_partition_clause insert_data returning_opt
+| insert_only comment_opt ignore_opt into_table_name opt_partition_clause insert_data returning
   {
     // insert_data returns a *Insert pre-filled with Columns & Values
     ins := $6
