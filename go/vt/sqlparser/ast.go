@@ -131,40 +131,43 @@ type (
 	// of the implications the deletion part may have on vindexes.
 	// If you add fields here, consider adding them to calls to validateUnshardedRoute.
 	Insert struct {
-		Action     string
-		Comments   Comments
-		Ignore     string
-		Table      TableName
-		Partitions Partitions
-		Columns    Columns
-		Rows       InsertRows
-		OnDup      OnDup
+		Action      string
+		Comments    Comments
+		Ignore      string
+		Table       TableName
+		Partitions  Partitions
+		Columns     Columns
+		Rows        InsertRows
+		OnDup       OnDup
+		SelectExprs SelectExprs
 	}
 
 	// Update represents an UPDATE statement.
 	// If you add fields here, consider adding them to calls to validateUnshardedRoute.
 	Update struct {
-		Action     string
-		Comments   Comments
-		Ignore     string
-		TableExprs TableExprs
-		Exprs      UpdateExprs
-		From       TableExprs
-		Where      *Where
-		OrderBy    OrderBy
-		Limit      *Limit
+		Action      string
+		Comments    Comments
+		Ignore      string
+		TableExprs  TableExprs
+		Exprs       UpdateExprs
+		From        TableExprs
+		Where       *Where
+		OrderBy     OrderBy
+		Limit       *Limit
+		SelectExprs SelectExprs
 	}
 
 	// Delete represents a DELETE statement.
 	// If you add fields here, consider adding them to calls to validateUnshardedRoute.
 	Delete struct {
-		Comments   Comments
-		Targets    TableNames
-		TableExprs TableExprs
-		Partitions Partitions
-		Where      *Where
-		OrderBy    OrderBy
-		Limit      *Limit
+		Comments    Comments
+		Targets     TableNames
+		TableExprs  TableExprs
+		Partitions  Partitions
+		Where       *Where
+		OrderBy     OrderBy
+		Limit       *Limit
+		SelectExprs SelectExprs
 	}
 
 	// Set represents a SET statement.

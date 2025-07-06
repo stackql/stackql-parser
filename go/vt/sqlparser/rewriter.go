@@ -258,6 +258,10 @@ func replaceDeletePartitions(newNode, parent SQLNode) {
 	parent.(*Delete).Partitions = newNode.(Partitions)
 }
 
+func replaceDeleteSelectExprs(newNode, parent SQLNode) {
+	parent.(*Delete).SelectExprs = newNode.(SelectExprs)
+}
+
 func replaceDeleteTableExprs(newNode, parent SQLNode) {
 	parent.(*Delete).TableExprs = newNode.(TableExprs)
 }
@@ -394,6 +398,10 @@ func replaceInsertPartitions(newNode, parent SQLNode) {
 
 func replaceInsertRows(newNode, parent SQLNode) {
 	parent.(*Insert).Rows = newNode.(InsertRows)
+}
+
+func replaceInsertSelectExprs(newNode, parent SQLNode) {
+	parent.(*Insert).SelectExprs = newNode.(SelectExprs)
 }
 
 func replaceInsertTable(newNode, parent SQLNode) {
@@ -861,6 +869,10 @@ func replaceUpdateOrderBy(newNode, parent SQLNode) {
 	parent.(*Update).OrderBy = newNode.(OrderBy)
 }
 
+func replaceUpdateSelectExprs(newNode, parent SQLNode) {
+	parent.(*Update).SelectExprs = newNode.(SelectExprs)
+}
+
 func replaceUpdateTableExprs(newNode, parent SQLNode) {
 	parent.(*Update).TableExprs = newNode.(TableExprs)
 }
@@ -1108,6 +1120,7 @@ func (a *application) apply(parent, node SQLNode, replacer replacerFunc) {
 		a.apply(node, n.Limit, replaceDeleteLimit)
 		a.apply(node, n.OrderBy, replaceDeleteOrderBy)
 		a.apply(node, n.Partitions, replaceDeletePartitions)
+		a.apply(node, n.SelectExprs, replaceDeleteSelectExprs)
 		a.apply(node, n.TableExprs, replaceDeleteTableExprs)
 		a.apply(node, n.Targets, replaceDeleteTargets)
 		a.apply(node, n.Where, replaceDeleteWhere)
@@ -1181,6 +1194,7 @@ func (a *application) apply(parent, node SQLNode, replacer replacerFunc) {
 		a.apply(node, n.OnDup, replaceInsertOnDup)
 		a.apply(node, n.Partitions, replaceInsertPartitions)
 		a.apply(node, n.Rows, replaceInsertRows)
+		a.apply(node, n.SelectExprs, replaceInsertSelectExprs)
 		a.apply(node, n.Table, replaceInsertTable)
 
 	case *IntervalExpr:
@@ -1459,6 +1473,7 @@ func (a *application) apply(parent, node SQLNode, replacer replacerFunc) {
 		a.apply(node, n.From, replaceUpdateFrom)
 		a.apply(node, n.Limit, replaceUpdateLimit)
 		a.apply(node, n.OrderBy, replaceUpdateOrderBy)
+		a.apply(node, n.SelectExprs, replaceUpdateSelectExprs)
 		a.apply(node, n.TableExprs, replaceUpdateTableExprs)
 		a.apply(node, n.Where, replaceUpdateWhere)
 
