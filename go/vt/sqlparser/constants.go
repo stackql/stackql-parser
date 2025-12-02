@@ -190,4 +190,15 @@ const (
 	// Cardinality increase functions
 	JsonEachStr              = "json_each"
 	JsonArrayElementsTextStr = "json_array_elements_text"
+
+	// Window function frame types
+	RowsStr  = "rows"
+	RangeStr = "range"
+
+	// Window function frame boundaries
+	CurrentRowStr         = "current row"
+	UnboundedPrecedingStr = "unbounded preceding"
+	UnboundedFollowingStr = "unbounded following"
+	PrecedingStr          = "preceding"
+	FollowingStr          = "following"
 )

@@ -57,6 +57,7 @@ type (
 
 	// Select represents a SELECT statement.
 	Select struct {
+		With             *With
 		Cache            *bool // a reference here so it can be nil
 		Distinct         bool
 		StraightJoinHint bool
@@ -70,6 +71,19 @@ type (
 		OrderBy          OrderBy
 		Limit            *Limit
 		Lock             string
+	}
+
+	// With represents the WITH clause (Common Table Expressions).
+	With struct {
+		Recursive bool
+		CTEs      []*CommonTableExpr
+	}
+
+	// CommonTableExpr represents a single CTE definition.
+	CommonTableExpr struct {
+		Name    TableIdent
+		Columns Columns
+		Select  SelectStatement
 	}
 
 	// Exec represents an EXEC statement
@@ -802,6 +816,27 @@ type (
 		Name      ColIdent
 		Distinct  bool
 		Exprs     SelectExprs
+		Over      *OverClause
+	}
+
+	// OverClause represents the OVER clause for window functions.
+	OverClause struct {
+		PartitionBy Exprs
+		OrderBy     OrderBy
+		Frame       *FrameClause
+	}
+
+	// FrameClause represents the frame specification in a window function.
+	FrameClause struct {
+		Type  string // ROWS or RANGE
+		Start *FramePoint
+		End   *FramePoint
+	}
+
+	// FramePoint represents a single point in a frame specification.
+	FramePoint struct {
+		Type string // CURRENT ROW, UNBOUNDED PRECEDING, UNBOUNDED FOLLOWING, or value PRECEDING/FOLLOWING
+		Expr Expr   // for value PRECEDING/FOLLOWING
 	}
 
 	// GroupConcatExpr represents a call to GROUP_CONCAT
@@ -989,6 +1024,9 @@ type TableIdent struct {
 
 // Format formats the node.
 func (node *Select) Format(buf *TrackedBuffer) {
+	if node.With != nil {
+		buf.astPrintf(node, "%v ", node.With)
+	}
 	var options string
 	addIf := func(b bool, s string) {
 		if b {
@@ -1011,6 +1049,30 @@ func (node *Select) Format(buf *TrackedBuffer) {
 		node.From, node.Where,
 		node.GroupBy, node.Having, node.OrderBy,
 		node.Limit, node.Lock)
+}
+
+// Format formats the node.
+func (node *With) Format(buf *TrackedBuffer) {
+	buf.WriteString("with ")
+	if node.Recursive {
+		buf.WriteString("recursive ")
+	}
+	for i, cte := range node.CTEs {
+		if i > 0 {
+			buf.WriteString(", ")
+		}
+		buf.astPrintf(node, "%v", cte)
+	}
+}
+
+// Format formats the node.
+func (node *CommonTableExpr) Format(buf *TrackedBuffer) {
+	buf.astPrintf(node, "%v", node.Name)
+	if len(node.Columns) > 0 {
+		buf.WriteString(" ")
+		buf.astPrintf(node, "%v", node.Columns)
+	}
+	buf.astPrintf(node, " as (%v)", node.Select)
 }
 
 func (node *Exec) Format(buf *TrackedBuffer) {
@@ -1892,6 +1954,61 @@ func (node *FuncExpr) Format(buf *TrackedBuffer) {
 		buf.WriteString(funcName)
 	}
 	buf.astPrintf(node, "(%s%v)", distinct, node.Exprs)
+	if node.Over != nil {
+		buf.astPrintf(node, " %v", node.Over)
+	}
+}
+
+// Format formats the node.
+func (node *OverClause) Format(buf *TrackedBuffer) {
+	buf.WriteString("over (")
+	needSpace := false
+	if len(node.PartitionBy) > 0 {
+		buf.astPrintf(node, "partition by %v", node.PartitionBy)
+		needSpace = true
+	}
+	if len(node.OrderBy) > 0 {
+		if needSpace {
+			buf.WriteString(" ")
+		}
+		buf.WriteString("order by ")
+		for i, order := range node.OrderBy {
+			if i > 0 {
+				buf.WriteString(", ")
+			}
+			buf.astPrintf(node, "%v", order)
+		}
+		needSpace = true
+	}
+	if node.Frame != nil {
+		if needSpace {
+			buf.WriteString(" ")
+		}
+		buf.astPrintf(node, "%v", node.Frame)
+	}
+	buf.WriteString(")")
+}
+
+// Format formats the node.
+func (node *FrameClause) Format(buf *TrackedBuffer) {
+	buf.WriteString(node.Type)
+	if node.End != nil {
+		buf.WriteString(" between ")
+		buf.astPrintf(node, "%v", node.Start)
+		buf.WriteString(" and ")
+		buf.astPrintf(node, "%v", node.End)
+	} else {
+		buf.WriteString(" ")
+		buf.astPrintf(node, "%v", node.Start)
+	}
+}
+
+// Format formats the node.
+func (node *FramePoint) Format(buf *TrackedBuffer) {
+	if node.Expr != nil {
+		buf.astPrintf(node, "%v ", node.Expr)
+	}
+	buf.WriteString(node.Type)
 }
 
 // Format formats the node
