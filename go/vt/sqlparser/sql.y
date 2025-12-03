@@ -124,6 +124,12 @@ func skipToEnd(yylex interface{}) {
   execVarDefOpt *ExecVarDef
   execVarDefs   []ExecVarDef
   listArgsConcat []ListArg
+  with          *With
+  cte           *CommonTableExpr
+  ctes          []*CommonTableExpr
+  overClause    *OverClause
+  frameClause   *FrameClause
+  framePoint    *FramePoint
 }
 
 %token LEX_ERROR
@@ -220,6 +226,7 @@ func skipToEnd(yylex interface{}) {
 %token <bytes> NESTED NETWORK_NAMESPACE NOWAIT NULLS OJ OLD OPTIONAL ORDINALITY ORGANIZATION OTHERS PATH PERSIST PERSIST_ONLY PRECEDING PRIVILEGE_CHECKS_USER PROCESS
 %token <bytes> RANDOM REFERENCE REQUIRE_ROW_FORMAT RESOURCE RESPECT RESTART RETAIN REUSE ROLE SECONDARY SECONDARY_ENGINE SECONDARY_LOAD SECONDARY_UNLOAD SKIP SRID
 %token <bytes> THREAD_PRIORITY TIES UNBOUNDED VCPU VISIBLE
+%token <bytes> ROW ROWS RANGE CURRENT
 
 // Explain tokens
 %token <bytes> FORMAT TREE VITESS TRADITIONAL
@@ -372,6 +379,14 @@ func skipToEnd(yylex interface{}) {
 %type <execVarDefOpt> opt_exec_payload
 %type <execVarDefs> exec_var_list
 %type <listArgsConcat> list_arg_concatamer
+%type <with> with_clause
+%type <cte> common_table_expr
+%type <ctes> cte_list
+%type <overClause> over_clause_opt
+%type <frameClause> frame_clause_opt
+%type <framePoint> frame_bound
+%type <exprs> partition_by_opt
+%type <str> frame_type
 
 %start any_command
 
@@ -523,7 +538,13 @@ base_select:
 //  1         2            3              4                    5             6                7           8
   SELECT comment_opt select_options select_expression_list from_opt where_expression_opt group_by_opt having_opt
   {
-    $$ = NewSelect(Comments($2), $4/*SelectExprs*/, $3/*options*/, $5/*from*/, NewWhere(WhereStr, $6), GroupBy($7), NewWhere(HavingStr, $8)) 
+    $$ = NewSelect(Comments($2), $4/*SelectExprs*/, $3/*options*/, $5/*from*/, NewWhere(WhereStr, $6), GroupBy($7), NewWhere(HavingStr, $8))
+  }
+| with_clause SELECT comment_opt select_options select_expression_list from_opt where_expression_opt group_by_opt having_opt
+  {
+    sel := NewSelect(Comments($3), $5/*SelectExprs*/, $4/*options*/, $6/*from*/, NewWhere(WhereStr, $7), GroupBy($8), NewWhere(HavingStr, $9))
+    sel.With = $1
+    $$ = sel
   }
 
 union_rhs:
@@ -3049,21 +3070,21 @@ cardinality_expansion_function_name:
   introduce side effects due to being a simple identifier
 */
 function_call_generic:
-  sql_id openb select_expression_list_opt closeb
+  sql_id openb select_expression_list_opt closeb over_clause_opt
   {
-    $$ = &FuncExpr{Name: $1, Exprs: $3}
+    $$ = &FuncExpr{Name: $1, Exprs: $3, Over: $5}
   }
-| sql_id openb DISTINCT select_expression_list closeb
+| sql_id openb DISTINCT select_expression_list closeb over_clause_opt
   {
-    $$ = &FuncExpr{Name: $1, Distinct: true, Exprs: $4}
+    $$ = &FuncExpr{Name: $1, Distinct: true, Exprs: $4, Over: $6}
   }
-| sql_id openb DISTINCTROW select_expression_list closeb
+| sql_id openb DISTINCTROW select_expression_list closeb over_clause_opt
   {
-    $$ = &FuncExpr{Name: $1, Distinct: true, Exprs: $4}
-  }  
-| table_id '.' reserved_sql_id openb select_expression_list_opt closeb
+    $$ = &FuncExpr{Name: $1, Distinct: true, Exprs: $4, Over: $6}
+  }
+| table_id '.' reserved_sql_id openb select_expression_list_opt closeb over_clause_opt
   {
-    $$ = &FuncExpr{Qualifier: $1, Name: $3, Exprs: $5}
+    $$ = &FuncExpr{Qualifier: $1, Name: $3, Exprs: $5, Over: $7}
   }
 
 /*
@@ -4046,6 +4067,7 @@ non_reserved_keyword:
 | COMMIT
 | COMMITTED
 | COMPONENT
+| CURRENT
 | DATE
 | DATETIME
 | DECIMAL
@@ -4141,6 +4163,7 @@ non_reserved_keyword:
 | PROCESSLIST
 | PURGE
 | QUERY
+| RANGE
 | RANDOM
 | READ
 | REAL
@@ -4160,6 +4183,8 @@ non_reserved_keyword:
 | REVOKE
 | ROLE
 | ROLLBACK
+| ROW
+| ROWS
 | SA
 | SECONDARY
 | SECONDARY_ENGINE
@@ -4212,6 +4237,101 @@ non_reserved_keyword:
 | WRITE
 | YEAR
 | ZEROFILL
+
+/*
+  Common Table Expressions (WITH clause)
+*/
+with_clause:
+  WITH cte_list
+  {
+    $$ = &With{Recursive: false, CTEs: $2}
+  }
+| WITH RECURSIVE cte_list
+  {
+    $$ = &With{Recursive: true, CTEs: $3}
+  }
+
+cte_list:
+  common_table_expr
+  {
+    $$ = []*CommonTableExpr{$1}
+  }
+| cte_list ',' common_table_expr
+  {
+    $$ = append($1, $3)
+  }
+
+common_table_expr:
+  table_id opt_column_list AS openb select_statement closeb
+  {
+    $$ = &CommonTableExpr{Name: $1, Columns: $2, Select: $5}
+  }
+
+/*
+  Window function OVER clause
+*/
+over_clause_opt:
+  {
+    $$ = nil
+  }
+| OVER openb partition_by_opt order_by_opt frame_clause_opt closeb
+  {
+    $$ = &OverClause{PartitionBy: $3, OrderBy: $4, Frame: $5}
+  }
+
+partition_by_opt:
+  {
+    $$ = nil
+  }
+| PARTITION BY expression_list
+  {
+    $$ = $3
+  }
+
+frame_clause_opt:
+  {
+    $$ = nil
+  }
+| frame_type frame_bound
+  {
+    $$ = &FrameClause{Type: $1, Start: $2, End: nil}
+  }
+| frame_type BETWEEN frame_bound AND frame_bound
+  {
+    $$ = &FrameClause{Type: $1, Start: $3, End: $5}
+  }
+
+frame_type:
+  ROWS
+  {
+    $$ = RowsStr
+  }
+| RANGE
+  {
+    $$ = RangeStr
+  }
+
+frame_bound:
+  CURRENT ROW
+  {
+    $$ = &FramePoint{Type: CurrentRowStr, Expr: nil}
+  }
+| UNBOUNDED PRECEDING
+  {
+    $$ = &FramePoint{Type: UnboundedPrecedingStr, Expr: nil}
+  }
+| UNBOUNDED FOLLOWING
+  {
+    $$ = &FramePoint{Type: UnboundedFollowingStr, Expr: nil}
+  }
+| value_expression PRECEDING
+  {
+    $$ = &FramePoint{Type: PrecedingStr, Expr: $1}
+  }
+| value_expression FOLLOWING
+  {
+    $$ = &FramePoint{Type: FollowingStr, Expr: $1}
+  }
 
 openb:
   '('

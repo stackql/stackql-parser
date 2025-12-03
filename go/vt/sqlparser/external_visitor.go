@@ -116,4 +116,9 @@ func (node VindexParam) Accept(vis SQLAstVisitor) error               { return v
 func (node *VindexSpec) Accept(vis SQLAstVisitor) error               { return vis.Visit(node) }
 func (node *When) Accept(vis SQLAstVisitor) error                     { return vis.Visit(node) }
 func (node *Where) Accept(vis SQLAstVisitor) error                    { return vis.Visit(node) }
+func (node *With) Accept(vis SQLAstVisitor) error                     { return vis.Visit(node) }
+func (node *CommonTableExpr) Accept(vis SQLAstVisitor) error          { return vis.Visit(node) }
+func (node *OverClause) Accept(vis SQLAstVisitor) error               { return vis.Visit(node) }
+func (node *FrameClause) Accept(vis SQLAstVisitor) error              { return vis.Visit(node) }
+func (node *FramePoint) Accept(vis SQLAstVisitor) error               { return vis.Visit(node) }
 func (node *XorExpr) Accept(vis SQLAstVisitor) error                  { return vis.Visit(node) }
