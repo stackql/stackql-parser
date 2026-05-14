@@ -1969,6 +1969,24 @@ func TestKeywords(t *testing.T) {
 	}
 }
 
+func TestDemotedReservedKeywords(t *testing.T) {
+	cases := []struct {
+		phase string
+		sql   string
+	}{
+		// Phase 1: bucket-C tokens (declared reserved but never emitted by the lexer).
+		{"phase1", "select rank, lag, lead, row_number, system, groups, member from t"},
+		{"phase1", "select array, lateral, json_table, window from t"},
+		{"phase1", "select cume_dist, dense_rank, first_value, grouping, last_value from t"},
+		{"phase1", "select nth_value, ntile, of, percent_rank from t"},
+	}
+	for _, tc := range cases {
+		if _, err := Parse(tc.sql); err != nil {
+			t.Errorf("%s: failed to parse %q: %v", tc.phase, tc.sql, err)
+		}
+	}
+}
+
 func TestConvert(t *testing.T) {
 	validSQL := []struct {
 		input  string
