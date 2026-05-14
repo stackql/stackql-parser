@@ -1969,6 +1969,36 @@ func TestKeywords(t *testing.T) {
 	}
 }
 
+func TestDemotedReservedKeywords(t *testing.T) {
+	cases := []struct {
+		phase string
+		sql   string
+	}{
+		// Phase 1: bucket-C tokens (declared reserved but never emitted by the lexer).
+		{"phase1", "select rank, lag, lead, row_number, system, groups, member from t"},
+		{"phase1", "select array, lateral, json_table, window from t"},
+		{"phase1", "select cume_dist, dense_rank, first_value, grouping, last_value from t"},
+		{"phase1", "select nth_value, ntile, of, percent_rank from t"},
+		// Phase 2: MySQL-only mid-clause keywords.
+		{"phase2", "select force from t where force = true"},
+		{"phase2", "select match from t"},
+		{"phase2", "select maxvalue, distinctrow, unlock, auto_increment from t"},
+		{"phase2", "delete from t where name = 'x' and force = true"},
+		// Phase 3: RENAME and UNIQUE demoted; LOCK reverted because demotion
+		// broke the LOCK IN SHARE MODE select suffix.
+		{"phase3", "select rename from t"},
+		{"phase3", "select rename from t where rename = 1"},
+		{"phase3", "create table foo (name text unique)"},
+		{"phase3", "create unique index idx on foo (name)"},
+		{"phase3", "select unique from t where unique = 1"},
+	}
+	for _, tc := range cases {
+		if _, err := Parse(tc.sql); err != nil {
+			t.Errorf("%s: failed to parse %q: %v", tc.phase, tc.sql, err)
+		}
+	}
+}
+
 func TestConvert(t *testing.T) {
 	validSQL := []struct {
 		input  string
