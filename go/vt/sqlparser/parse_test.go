@@ -1979,6 +1979,11 @@ func TestDemotedReservedKeywords(t *testing.T) {
 		{"phase1", "select array, lateral, json_table, window from t"},
 		{"phase1", "select cume_dist, dense_rank, first_value, grouping, last_value from t"},
 		{"phase1", "select nth_value, ntile, of, percent_rank from t"},
+		// Phase 2: MySQL-only mid-clause keywords.
+		{"phase2", "select force from t where force = true"},
+		{"phase2", "select match from t"},
+		{"phase2", "select maxvalue, distinctrow, unlock, auto_increment from t"},
+		{"phase2", "delete from t where name = 'x' and force = true"},
 	}
 	for _, tc := range cases {
 		if _, err := Parse(tc.sql); err != nil {

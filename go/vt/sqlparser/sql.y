@@ -3919,7 +3919,6 @@ reserved_keyword:
 | AND
 | AS
 | ASC
-| AUTO_INCREMENT
 | BETWEEN
 | BINARY
 | BY
@@ -3939,7 +3938,6 @@ reserved_keyword:
 | DESC
 | DESCRIBE
 | DISTINCT
-| DISTINCTROW
 | DIV
 | DROP
 | ELSE
@@ -3950,7 +3948,6 @@ reserved_keyword:
 | EXPLAIN
 | FALSE
 | FOR
-| FORCE
 | FROM
 | GROUP
 | HAVING
@@ -3970,8 +3967,6 @@ reserved_keyword:
 | LOCALTIME
 | LOCALTIMESTAMP
 | LOCK
-| MATCH
-| MAXVALUE
 | MOD
 | NATURAL
 | NEXT // next should be doable as non-reserved, but is not due to the special `select next num_val` query that vitess supports
@@ -3994,7 +3989,6 @@ reserved_keyword:
 | SEPARATOR
 | SET
 | SHOW
-| STRAIGHT_JOIN
 | TABLE
 | THEN
 | TIMESTAMPADD
@@ -4003,7 +3997,6 @@ reserved_keyword:
 | TRUE
 | UNION
 | UNIQUE
-| UNLOCK
 | UPDATE
 | USE
 | USING
@@ -4029,6 +4022,7 @@ non_reserved_keyword:
 | ADMIN
 | ARRAY
 | AUTH
+| AUTO_INCREMENT
 | BEGIN
 | BIGINT
 | BIT
@@ -4057,6 +4051,7 @@ non_reserved_keyword:
 | DEFINITION
 | DENSE_RANK
 | DESCRIPTION
+| DISTINCTROW
 | DOUBLE
 | DUPLICATE
 | ENFORCED
@@ -4070,6 +4065,7 @@ non_reserved_keyword:
 | FIRST_VALUE
 | FLUSH
 | FOLLOWING
+| FORCE
 | FOREIGN
 | FULLTEXT
 | GEOMCOLLECTION
@@ -4113,7 +4109,9 @@ non_reserved_keyword:
 | MASTER_PUBLIC_KEY_PATH
 | MASTER_TLS_CIPHERSUITES
 | MASTER_ZSTD_COMPRESSION_LEVEL
+| MATCH
 | MATERIALIZED
+| MAXVALUE
 | MEMBER
 | MEDIUMBLOB
 | MEDIUMINT
@@ -4201,6 +4199,7 @@ non_reserved_keyword:
 | SRID
 | START
 | STATUS
+| STRAIGHT_JOIN
 | SYSTEM
 | TABLES
 | TEMP
@@ -4219,6 +4218,7 @@ non_reserved_keyword:
 | TRUNCATE
 | UNBOUNDED
 | UNCOMMITTED
+| UNLOCK
 | UNSIGNED
 | UNUSED
 | VARBINARY
