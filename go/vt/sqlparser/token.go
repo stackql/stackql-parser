@@ -274,6 +274,7 @@ var keywords = map[string]int{
 	"mediumblob":               MEDIUMBLOB,
 	"mediumint":                MEDIUMINT,
 	"mediumtext":               MEDIUMTEXT,
+	"method":                   METHOD,
 	"middleint":                UNUSED,
 	"minute_microsecond":       UNUSED,
 	"minute_second":            UNUSED,
