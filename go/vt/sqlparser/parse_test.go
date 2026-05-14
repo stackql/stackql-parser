@@ -1984,6 +1984,13 @@ func TestDemotedReservedKeywords(t *testing.T) {
 		{"phase2", "select match from t"},
 		{"phase2", "select maxvalue, distinctrow, unlock, auto_increment from t"},
 		{"phase2", "delete from t where name = 'x' and force = true"},
+		// Phase 3: RENAME and UNIQUE demoted; LOCK reverted because demotion
+		// broke the LOCK IN SHARE MODE select suffix.
+		{"phase3", "select rename from t"},
+		{"phase3", "select rename from t where rename = 1"},
+		{"phase3", "create table foo (name text unique)"},
+		{"phase3", "create unique index idx on foo (name)"},
+		{"phase3", "select unique from t where unique = 1"},
 	}
 	for _, tc := range cases {
 		if _, err := Parse(tc.sql); err != nil {

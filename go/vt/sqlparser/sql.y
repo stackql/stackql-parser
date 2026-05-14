@@ -3980,7 +3980,6 @@ reserved_keyword:
 | OVER
 | RECURSIVE
 | REGEXP
-| RENAME
 | REPLACE
 | RETURNING
 | RIGHT
@@ -3996,7 +3995,6 @@ reserved_keyword:
 | TO
 | TRUE
 | UNION
-| UNIQUE
 | UPDATE
 | USE
 | USING
@@ -4165,6 +4163,7 @@ non_reserved_keyword:
 | REFERENCE
 | REFERENCES
 | REFRESH
+| RENAME
 | REORGANIZE
 | REPAIR
 | REPEATABLE
@@ -4218,6 +4217,7 @@ non_reserved_keyword:
 | TRUNCATE
 | UNBOUNDED
 | UNCOMMITTED
+| UNIQUE
 | UNLOCK
 | UNSIGNED
 | UNUSED
