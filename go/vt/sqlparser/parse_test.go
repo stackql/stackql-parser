@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"reflect"
 	"strings"
 	"sync"
 	"testing"
@@ -1997,6 +1998,127 @@ func TestDemotedReservedKeywords(t *testing.T) {
 			t.Errorf("%s: failed to parse %q: %v", tc.phase, tc.sql, err)
 		}
 	}
+}
+
+func TestDescribeMethod(t *testing.T) {
+	t.Run("positive", func(t *testing.T) {
+		cases := []struct {
+			sql      string
+			extended string
+			provider string
+			service  string
+			resource string
+			method   string
+		}{
+			{"describe method google.storage.buckets.get", "", "google", "storage", "buckets", "get"},
+			{"DESCRIBE METHOD google.storage.buckets.get", "", "google", "storage", "buckets", "get"},
+			{"describe method extended google.storage.buckets.insert", "extended ", "google", "storage", "buckets", "insert"},
+			{"DESCRIBE METHOD EXTENDED aws.s3.objects.create_multipart_upload", "extended ", "aws", "s3", "objects", "create_multipart_upload"},
+			{"describe method aws.cloud_formation.stacks_v2.create_stack", "", "aws", "cloud_formation", "stacks_v2", "create_stack"},
+		}
+		for _, tc := range cases {
+			ast, err := Parse(tc.sql)
+			if err != nil {
+				t.Errorf("failed to parse %q: %v", tc.sql, err)
+				continue
+			}
+			dm, ok := ast.(*DescribeMethod)
+			if !ok {
+				t.Errorf("%q parsed to %T, want *DescribeMethod", tc.sql, ast)
+				continue
+			}
+			if dm.Extended != tc.extended {
+				t.Errorf("%q: Extended = %q, want %q", tc.sql, dm.Extended, tc.extended)
+			}
+			if dm.Provider.String() != tc.provider {
+				t.Errorf("%q: Provider = %q, want %q", tc.sql, dm.Provider.String(), tc.provider)
+			}
+			if dm.Service.String() != tc.service {
+				t.Errorf("%q: Service = %q, want %q", tc.sql, dm.Service.String(), tc.service)
+			}
+			if dm.Resource.String() != tc.resource {
+				t.Errorf("%q: Resource = %q, want %q", tc.sql, dm.Resource.String(), tc.resource)
+			}
+			if dm.Method.String() != tc.method {
+				t.Errorf("%q: Method = %q, want %q", tc.sql, dm.Method.String(), tc.method)
+			}
+		}
+	})
+
+	t.Run("describe_table_regression", func(t *testing.T) {
+		regression := []string{
+			"describe buckets",
+			"describe extended buckets",
+			"desc buckets",
+		}
+		for _, sql := range regression {
+			ast, err := Parse(sql)
+			if err != nil {
+				t.Errorf("failed to parse %q: %v", sql, err)
+				continue
+			}
+			if _, ok := ast.(*DescribeTable); !ok {
+				t.Errorf("%q parsed to %T, want *DescribeTable", sql, ast)
+			}
+		}
+	})
+
+	t.Run("method_as_identifier", func(t *testing.T) {
+		ids := []string{
+			"select method from t",
+			"select method from t where method = 'GET'",
+		}
+		for _, sql := range ids {
+			if _, err := Parse(sql); err != nil {
+				t.Errorf("METHOD must remain usable as identifier; failed %q: %v", sql, err)
+			}
+		}
+	})
+
+	t.Run("negative", func(t *testing.T) {
+		bad := []string{
+			"describe method foo",                       // 1 segment
+			"describe method foo.bar",                   // 2 segments
+			"describe method foo.bar.baz",               // 3 segments
+			"describe method foo.bar.baz.qux.extra",     // 5 segments
+			"desc method foo.bar.baz.qux",               // DESC form not accepted
+			"explain method foo.bar.baz.qux",            // EXPLAIN form not accepted
+			"describe method",                           // no path
+			"describe method extended",                  // no path after EXTENDED
+		}
+		for _, sql := range bad {
+			if _, err := Parse(sql); err == nil {
+				t.Errorf("expected parse error for %q, got nil", sql)
+			}
+		}
+	})
+
+	t.Run("round_trip", func(t *testing.T) {
+		// Round-trip works for inputs whose segments are not lexer keywords.
+		// Keyword segments (e.g. `get`, `insert`) round-trip via backtick-quoting,
+		// which this fork's lexer does not accept - a pre-existing limitation
+		// unrelated to DESCRIBE METHOD.
+		cases := []string{
+			"describe method aws.cloud_formation.stacks_v2.create_stack",
+			"describe method extended provider1.service1.resource1.method1",
+		}
+		for _, sql := range cases {
+			ast1, err := Parse(sql)
+			if err != nil {
+				t.Errorf("failed to parse %q: %v", sql, err)
+				continue
+			}
+			formatted := String(ast1)
+			ast2, err := Parse(formatted)
+			if err != nil {
+				t.Errorf("re-parse failed: in=%q formatted=%q err=%v", sql, formatted, err)
+				continue
+			}
+			if !reflect.DeepEqual(ast1, ast2) {
+				t.Errorf("round-trip mismatch:\n  in=%q\n  fmt=%q\n  ast1=%#v\n  ast2=%#v", sql, formatted, ast1, ast2)
+			}
+		}
+	})
 }
 
 func TestConvert(t *testing.T) {

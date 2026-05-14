@@ -152,6 +152,18 @@ func (r *replaceColumnsItems) inc() {
 	*r++
 }
 
+func replaceCommonTableExprColumns(newNode, parent SQLNode) {
+	parent.(*CommonTableExpr).Columns = newNode.(Columns)
+}
+
+func replaceCommonTableExprName(newNode, parent SQLNode) {
+	parent.(*CommonTableExpr).Name = newNode.(TableIdent)
+}
+
+func replaceCommonTableExprSelect(newNode, parent SQLNode) {
+	parent.(*CommonTableExpr).Select = newNode.(SelectStatement)
+}
+
 func replaceComparisonExprEscape(newNode, parent SQLNode) {
 	parent.(*ComparisonExpr).Escape = newNode.(Expr)
 }
@@ -274,6 +286,22 @@ func replaceDeleteWhere(newNode, parent SQLNode) {
 	parent.(*Delete).Where = newNode.(*Where)
 }
 
+func replaceDescribeMethodMethod(newNode, parent SQLNode) {
+	parent.(*DescribeMethod).Method = newNode.(TableIdent)
+}
+
+func replaceDescribeMethodProvider(newNode, parent SQLNode) {
+	parent.(*DescribeMethod).Provider = newNode.(TableIdent)
+}
+
+func replaceDescribeMethodResource(newNode, parent SQLNode) {
+	parent.(*DescribeMethod).Resource = newNode.(TableIdent)
+}
+
+func replaceDescribeMethodService(newNode, parent SQLNode) {
+	parent.(*DescribeMethod).Service = newNode.(TableIdent)
+}
+
 func replaceDescribeTableTable(newNode, parent SQLNode) {
 	parent.(*DescribeTable).Table = newNode.(TableName)
 }
@@ -328,12 +356,28 @@ func replaceForeignKeyDefinitionSource(newNode, parent SQLNode) {
 	parent.(*ForeignKeyDefinition).Source = newNode.(Columns)
 }
 
+func replaceFrameClauseEnd(newNode, parent SQLNode) {
+	parent.(*FrameClause).End = newNode.(*FramePoint)
+}
+
+func replaceFrameClauseStart(newNode, parent SQLNode) {
+	parent.(*FrameClause).Start = newNode.(*FramePoint)
+}
+
+func replaceFramePointExpr(newNode, parent SQLNode) {
+	parent.(*FramePoint).Expr = newNode.(Expr)
+}
+
 func replaceFuncExprExprs(newNode, parent SQLNode) {
 	parent.(*FuncExpr).Exprs = newNode.(SelectExprs)
 }
 
 func replaceFuncExprName(newNode, parent SQLNode) {
 	parent.(*FuncExpr).Name = newNode.(ColIdent)
+}
+
+func replaceFuncExprOver(newNode, parent SQLNode) {
+	parent.(*FuncExpr).Over = newNode.(*OverClause)
 }
 
 func replaceFuncExprQualifier(newNode, parent SQLNode) {
@@ -503,6 +547,18 @@ func (r *replaceOrderByItems) inc() {
 	*r++
 }
 
+func replaceOverClauseFrame(newNode, parent SQLNode) {
+	parent.(*OverClause).Frame = newNode.(*FrameClause)
+}
+
+func replaceOverClauseOrderBy(newNode, parent SQLNode) {
+	parent.(*OverClause).OrderBy = newNode.(OrderBy)
+}
+
+func replaceOverClausePartitionBy(newNode, parent SQLNode) {
+	parent.(*OverClause).PartitionBy = newNode.(Exprs)
+}
+
 func replaceParenSelectSelect(newNode, parent SQLNode) {
 	parent.(*ParenSelect).Select = newNode.(SelectStatement)
 }
@@ -613,6 +669,10 @@ func replaceSelectSelectExprs(newNode, parent SQLNode) {
 
 func replaceSelectWhere(newNode, parent SQLNode) {
 	parent.(*Select).Where = newNode.(*Where)
+}
+
+func replaceSelectWith(newNode, parent SQLNode) {
+	parent.(*Select).With = newNode.(*With)
 }
 
 type replaceSelectExprsItems int
@@ -962,6 +1022,16 @@ func replaceWhereExpr(newNode, parent SQLNode) {
 	parent.(*Where).Expr = newNode.(Expr)
 }
 
+type replaceWithCTEs int
+
+func (r *replaceWithCTEs) replace(newNode, container SQLNode) {
+	container.(*With).CTEs[int(*r)] = newNode.(*CommonTableExpr)
+}
+
+func (r *replaceWithCTEs) inc() {
+	*r++
+}
+
 func replaceXorExprLeft(newNode, parent SQLNode) {
 	parent.(*XorExpr).Left = newNode.(Expr)
 }
@@ -1071,6 +1141,11 @@ func (a *application) apply(parent, node SQLNode, replacer replacerFunc) {
 
 	case *Commit:
 
+	case *CommonTableExpr:
+		a.apply(node, n.Columns, replaceCommonTableExprColumns)
+		a.apply(node, n.Name, replaceCommonTableExprName)
+		a.apply(node, n.Select, replaceCommonTableExprSelect)
+
 	case *ComparisonExpr:
 		a.apply(node, n.Escape, replaceComparisonExprEscape)
 		a.apply(node, n.Left, replaceComparisonExprLeft)
@@ -1125,6 +1200,12 @@ func (a *application) apply(parent, node SQLNode, replacer replacerFunc) {
 		a.apply(node, n.Targets, replaceDeleteTargets)
 		a.apply(node, n.Where, replaceDeleteWhere)
 
+	case *DescribeMethod:
+		a.apply(node, n.Method, replaceDescribeMethodMethod)
+		a.apply(node, n.Provider, replaceDescribeMethodProvider)
+		a.apply(node, n.Resource, replaceDescribeMethodResource)
+		a.apply(node, n.Service, replaceDescribeMethodService)
+
 	case *DescribeTable:
 		a.apply(node, n.Table, replaceDescribeTableTable)
 
@@ -1156,9 +1237,17 @@ func (a *application) apply(parent, node SQLNode, replacer replacerFunc) {
 		a.apply(node, n.ReferencedTable, replaceForeignKeyDefinitionReferencedTable)
 		a.apply(node, n.Source, replaceForeignKeyDefinitionSource)
 
+	case *FrameClause:
+		a.apply(node, n.End, replaceFrameClauseEnd)
+		a.apply(node, n.Start, replaceFrameClauseStart)
+
+	case *FramePoint:
+		a.apply(node, n.Expr, replaceFramePointExpr)
+
 	case *FuncExpr:
 		a.apply(node, n.Exprs, replaceFuncExprExprs)
 		a.apply(node, n.Name, replaceFuncExprName)
+		a.apply(node, n.Over, replaceFuncExprOver)
 		a.apply(node, n.Qualifier, replaceFuncExprQualifier)
 
 	case GroupBy:
@@ -1265,6 +1354,11 @@ func (a *application) apply(parent, node SQLNode, replacer replacerFunc) {
 
 	case *OtherRead:
 
+	case *OverClause:
+		a.apply(node, n.Frame, replaceOverClauseFrame)
+		a.apply(node, n.OrderBy, replaceOverClauseOrderBy)
+		a.apply(node, n.PartitionBy, replaceOverClausePartitionBy)
+
 	case *ParenSelect:
 		a.apply(node, n.Select, replaceParenSelectSelect)
 
@@ -1331,6 +1425,7 @@ func (a *application) apply(parent, node SQLNode, replacer replacerFunc) {
 		a.apply(node, n.OrderBy, replaceSelectOrderBy)
 		a.apply(node, n.SelectExprs, replaceSelectSelectExprs)
 		a.apply(node, n.Where, replaceSelectWhere)
+		a.apply(node, n.With, replaceSelectWith)
 
 	case SelectExprs:
 		replacer := replaceSelectExprsItems(0)
@@ -1530,6 +1625,14 @@ func (a *application) apply(parent, node SQLNode, replacer replacerFunc) {
 
 	case *Where:
 		a.apply(node, n.Expr, replaceWhereExpr)
+
+	case *With:
+		replacerCTEs := replaceWithCTEs(0)
+		replacerCTEsB := &replacerCTEs
+		for _, item := range n.CTEs {
+			a.apply(node, item, replacerCTEsB.replace)
+			replacerCTEsB.inc()
+		}
 
 	case *XorExpr:
 		a.apply(node, n.Left, replaceXorExprLeft)

@@ -258,6 +258,9 @@ func skipToEnd(yylex interface{}) {
 // stackql
 %token <bytes> STACKQL
 
+// describe method
+%token <bytes> METHOD
+
 // returning
 %token <bytes> RETURNING
 
@@ -2219,6 +2222,10 @@ explain_statement:
   {
     $$ = &Explain{Type: $2, Statement: $3}
   }
+| DESCRIBE METHOD extended_opt reserved_table_id '.' reserved_table_id '.' reserved_table_id '.' reserved_table_id
+  {
+    $$ = &DescribeMethod{Extended: string($3), Provider: $4, Service: $6, Resource: $8, Method: $10}
+  }
 
 other_statement:
   REPAIR skip_to_end
@@ -4114,6 +4121,7 @@ non_reserved_keyword:
 | MEDIUMBLOB
 | MEDIUMINT
 | MEDIUMTEXT
+| METHOD
 | MODE
 | MULTILINESTRING
 | MULTIPOINT

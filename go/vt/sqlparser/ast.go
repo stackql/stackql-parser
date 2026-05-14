@@ -332,6 +332,14 @@ type (
 		Table    TableName
 	}
 
+	DescribeMethod struct {
+		Extended string
+		Provider TableIdent
+		Service  TableIdent
+		Resource TableIdent
+		Method   TableIdent
+	}
+
 	Auth struct {
 		SessionAuth BoolVal
 		Provider    string
@@ -385,6 +393,7 @@ func (*Exec) iStatement()                    {}
 func (*Purge) iStatement()                   {}
 func (*NativeQuery) iStatement()             {}
 func (*DescribeTable) iStatement()           {}
+func (*DescribeMethod) iStatement()          {}
 func (*OtherAdmin) iStatement()              {}
 func (*Select) iSelectStatement()            {}
 func (*Union) iSelectStatement()             {}
@@ -1619,6 +1628,11 @@ func (node *OtherRead) Format(buf *TrackedBuffer) {
 // Format formats the node.
 func (node *DescribeTable) Format(buf *TrackedBuffer) {
 	buf.WriteString("describetable")
+}
+
+// Format formats the node.
+func (node *DescribeMethod) Format(buf *TrackedBuffer) {
+	buf.astPrintf(node, "describe method %s%v.%v.%v.%v", node.Extended, node.Provider, node.Service, node.Resource, node.Method)
 }
 
 // Format formats the node.
