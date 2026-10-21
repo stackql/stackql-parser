@@ -1,6 +1,6 @@
 module github.com/stackql/stackql-parser
 
-go 1.19
+go 1.27.3
 
 require (
 	github.com/Masterminds/semver v1.4.2
