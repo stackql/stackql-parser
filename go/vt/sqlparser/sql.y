@@ -684,6 +684,13 @@ set_statement:
   {
     $$ = &Set{Comments: Comments($2), Exprs: $3}
   }
+| UNSET comment_opt set_session_or_global unset_list
+  {
+    for _, expr := range $4 {
+      expr.Scope = $3
+    }
+    $$ = &Set{Comments: Comments($2), Exprs: $4}
+  }
 
 unset_list:
   reserved_sql_id
@@ -3716,7 +3723,13 @@ set_list:
   }
 | set_list ',' set_expression
   {
+    $3.Scope = $1[len($1)-1].Scope
     $$ = append($1, $3)
+  }
+| set_list ',' set_session_or_global set_expression
+  {
+    $4.Scope = $3
+    $$ = append($1, $4)
   }
 
 set_expression:

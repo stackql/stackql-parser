@@ -4,9 +4,9 @@ import "testing"
 
 func TestUnsetSessionConfiguration(t *testing.T) {
 	for _, sql := range []string{
-		"unset \"$.auth.aws.password\"",
+		"unset \"auth.aws.password\"",
 		"unset password",
-		"unset /* reset */ \"$.providers.production\", \"$.secrets.token\"",
+		"unset /* reset */ \"providers.production\", \"secrets.token\"",
 	} {
 		statement, err := Parse(sql)
 		if err != nil {
@@ -30,12 +30,31 @@ func TestUnsetSessionConfiguration(t *testing.T) {
 			t.Fatal("unset must route as session configuration")
 		}
 	}
-	for _, sql := range []string{"unset", "unset \"$.auth.aws\" = 'value'", "unset \"$.auth.aws\","} {
+	for _, sql := range []string{"unset", "unset \"auth.aws\" = 'value'", "unset \"auth.aws\","} {
 		if _, err := Parse(sql); err == nil {
 			t.Fatalf("accepted %q", sql)
 		}
 	}
 	if _, err := Parse("select unset from t"); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestConfigurationScope(t *testing.T) {
+	for _, scope := range []string{"session", "global"} {
+		for _, sql := range []string{
+			"set " + scope + " \"auth.aws.password\" = 'value', \"auth.aws.username\" = 'user'",
+			"unset " + scope + " \"auth.aws.password\", \"providers.production\"",
+		} {
+			statement, err := Parse(sql)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, expr := range statement.(*Set).Exprs {
+				if expr.Scope != scope {
+					t.Fatalf("%s: scope=%q", sql, expr.Scope)
+				}
+			}
+		}
 	}
 }
