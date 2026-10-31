@@ -163,6 +163,7 @@ func skipToEnd(yylex interface{}) {
 %left <bytes> '+' '-'
 %left <bytes> '*' '/' DIV '%' MOD
 %left <bytes> '^'
+%left <bytes> CONCAT
 %right <bytes> '~' UNARY
 %left <bytes> COLLATE
 %right <bytes> BINARY UNDERSCORE_BINARY UNDERSCORE_UTF8MB4 UNDERSCORE_UTF8 UNDERSCORE_LATIN1
@@ -203,7 +204,7 @@ func skipToEnd(yylex interface{}) {
 %token <bytes> COLLATION DATABASES TABLES VITESS_METADATA VSCHEMA FULL PROCESSLIST COLUMNS FIELDS ENGINES PLUGINS EXTENDED
 
 // SET tokens
-%token <bytes> NAMES CHARSET GLOBAL SESSION ISOLATION LEVEL READ WRITE ONLY REPEATABLE COMMITTED UNCOMMITTED SERIALIZABLE
+%token <bytes> UNSET NAMES CHARSET GLOBAL SESSION ISOLATION LEVEL READ WRITE ONLY REPEATABLE COMMITTED UNCOMMITTED SERIALIZABLE
 
 // Functions
 %token <bytes> CURRENT_TIMESTAMP DATABASE CURRENT_DATE
@@ -327,6 +328,7 @@ func skipToEnd(yylex interface{}) {
 %type <bytes> charset_or_character_set
 %type <updateExpr> update_expression
 %type <setExpr> set_expression
+%type <setExprs> unset_list
 %type <characteristic> transaction_char
 %type <characteristics> transaction_chars
 %type <str> isolation_level view_modifier table_modifier
@@ -678,6 +680,27 @@ set_statement:
   SET comment_opt set_list
   {
     $$ = &Set{Comments: Comments($2), Exprs: $3}
+  }
+| UNSET comment_opt unset_list
+  {
+    $$ = &Set{Comments: Comments($2), Exprs: $3}
+  }
+| UNSET comment_opt set_session_or_global unset_list
+  {
+    for _, expr := range $4 {
+      expr.Scope = $3
+    }
+    $$ = &Set{Comments: Comments($2), Exprs: $4}
+  }
+
+unset_list:
+  reserved_sql_id
+  {
+    $$ = SetExprs{&SetExpr{Name: $1, Expr: &Default{}}}
+  }
+| unset_list ',' reserved_sql_id
+  {
+    $$ = append($1, &SetExpr{Name: $3, Expr: &Default{}})
   }
 
 set_transaction_statement:
@@ -2926,6 +2949,10 @@ value_expression:
   {
     $$ = &BinaryExpr{Left: $1, Operator: BitAndStr, Right: $3}
   }
+| value_expression CONCAT value_expression
+  {
+    $$ = &BinaryExpr{Left: $1, Operator: "||", Right: $3}
+  }
 | value_expression '|' value_expression
   {
     $$ = &BinaryExpr{Left: $1, Operator: BitOrStr, Right: $3}
@@ -3321,6 +3348,31 @@ convert_type:
   {
     $$ = &ConvertType{Type: string($1), Length: $2, Charset: string($3.String())}
   }
+| TEXT
+  {
+    $$ = &ConvertType{Type: string($1)}
+  }
+| INTEGER
+  {
+    $$ = &ConvertType{Type: string($1)}
+  }
+| INT
+  {
+    $$ = &ConvertType{Type: string($1)}
+  }
+| BIGINT
+  {
+    $$ = &ConvertType{Type: string($1)}
+  }
+| BOOLEAN
+  {
+    $$ = &ConvertType{Type: string($1)}
+  }
+| BOOL
+  {
+    $$ = &ConvertType{Type: string($1)}
+  }
+
 | DATE
   {
     $$ = &ConvertType{Type: string($1)}
@@ -3701,7 +3753,13 @@ set_list:
   }
 | set_list ',' set_expression
   {
+    $3.Scope = $1[len($1)-1].Scope
     $$ = append($1, $3)
+  }
+| set_list ',' set_session_or_global set_expression
+  {
+    $4.Scope = $3
+    $$ = append($1, $4)
   }
 
 set_expression:
@@ -4021,6 +4079,8 @@ reserved_keyword:
   Sorted alphabetically
 */
 non_reserved_keyword:
+  UNSET
+|
   AGAINST
 | ACTION
 | ACTIVE
