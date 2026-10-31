@@ -360,6 +360,7 @@ var keywords = map[string]int{
 	"serviceaccount":           SERVICEACCOUNT,
 	"session":                  SESSION,
 	"set":                      SET,
+	"unset":                    UNSET,
 	"share":                    SHARE,
 	"show":                     SHOW,
 	"signal":                   UNUSED,

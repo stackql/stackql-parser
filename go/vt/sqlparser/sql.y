@@ -203,7 +203,7 @@ func skipToEnd(yylex interface{}) {
 %token <bytes> COLLATION DATABASES TABLES VITESS_METADATA VSCHEMA FULL PROCESSLIST COLUMNS FIELDS ENGINES PLUGINS EXTENDED
 
 // SET tokens
-%token <bytes> NAMES CHARSET GLOBAL SESSION ISOLATION LEVEL READ WRITE ONLY REPEATABLE COMMITTED UNCOMMITTED SERIALIZABLE
+%token <bytes> UNSET NAMES CHARSET GLOBAL SESSION ISOLATION LEVEL READ WRITE ONLY REPEATABLE COMMITTED UNCOMMITTED SERIALIZABLE
 
 // Functions
 %token <bytes> CURRENT_TIMESTAMP DATABASE CURRENT_DATE
@@ -327,6 +327,7 @@ func skipToEnd(yylex interface{}) {
 %type <bytes> charset_or_character_set
 %type <updateExpr> update_expression
 %type <setExpr> set_expression
+%type <setExprs> unset_list
 %type <characteristic> transaction_char
 %type <characteristics> transaction_chars
 %type <str> isolation_level view_modifier table_modifier
@@ -678,6 +679,20 @@ set_statement:
   SET comment_opt set_list
   {
     $$ = &Set{Comments: Comments($2), Exprs: $3}
+  }
+| UNSET comment_opt unset_list
+  {
+    $$ = &Set{Comments: Comments($2), Exprs: $3}
+  }
+
+unset_list:
+  reserved_sql_id
+  {
+    $$ = SetExprs{&SetExpr{Name: $1, Expr: &Default{}}}
+  }
+| unset_list ',' reserved_sql_id
+  {
+    $$ = append($1, &SetExpr{Name: $3, Expr: &Default{}})
   }
 
 set_transaction_statement:
@@ -4021,6 +4036,8 @@ reserved_keyword:
   Sorted alphabetically
 */
 non_reserved_keyword:
+  UNSET
+|
   AGAINST
 | ACTION
 | ACTIVE
