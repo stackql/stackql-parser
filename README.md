@@ -27,3 +27,6 @@ cicd/build_scripts/01_ast_rebuild.sh
 Unless otherwise noted, source files are distributed
 under the Apache Version 2.0 license found in the LICENSE file.
 
+
+Session configuration reset syntax and its host contract are described in
+[Session configuration reset](SESSION_CONFIGURATION.md).

@@ -155,7 +155,7 @@ func Preview(sql string) StatementType {
 	switch loweredFirstWord {
 	case "create", "alter", "rename", "drop", "truncate", "flush":
 		return StmtDDL
-	case "set":
+	case "set", "unset":
 		return StmtSet
 	case "show":
 		return StmtShow

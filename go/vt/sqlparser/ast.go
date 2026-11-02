@@ -1802,7 +1802,7 @@ func (node *AndExpr) Format(buf *TrackedBuffer) {
 
 // Format formats the node.
 func (node *OrExpr) Format(buf *TrackedBuffer) {
-	buf.astPrintf(node, "%v || %v", node.Left, node.Right)
+	buf.astPrintf(node, "%v or %v", node.Left, node.Right)
 }
 
 // Format formats the node.
