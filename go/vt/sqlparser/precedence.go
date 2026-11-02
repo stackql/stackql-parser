@@ -26,6 +26,7 @@ const (
 	P2
 	P3
 	P4
+	PConcat
 	P5
 	P6
 	P7
@@ -43,8 +44,8 @@ const (
 
 // precedenceFor returns the precedence of an expression.
 //
-// * NOTE: If you change anything here, update sql.y to keep them consistent.
-//   Also make sure to add the new constructs to random_expr.go so we have test coverage for the new expressions *
+//   - NOTE: If you change anything here, update sql.y to keep them consistent.
+//     Also make sure to add the new constructs to random_expr.go so we have test coverage for the new expressions *
 func precedenceFor(in Expr) Precendence {
 	switch node := in.(type) {
 	case *OrExpr:
@@ -66,6 +67,8 @@ func precedenceFor(in Expr) Precendence {
 		return P11
 	case *BinaryExpr:
 		switch node.Operator {
+		case "||":
+			return PConcat
 		case BitOrStr:
 			return P10
 		case BitAndStr:
