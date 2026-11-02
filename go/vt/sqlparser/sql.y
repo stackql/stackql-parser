@@ -163,6 +163,7 @@ func skipToEnd(yylex interface{}) {
 %left <bytes> '+' '-'
 %left <bytes> '*' '/' DIV '%' MOD
 %left <bytes> '^'
+%left <bytes> CONCAT
 %right <bytes> '~' UNARY
 %left <bytes> COLLATE
 %right <bytes> BINARY UNDERSCORE_BINARY UNDERSCORE_UTF8MB4 UNDERSCORE_UTF8 UNDERSCORE_LATIN1
@@ -2948,6 +2949,10 @@ value_expression:
   {
     $$ = &BinaryExpr{Left: $1, Operator: BitAndStr, Right: $3}
   }
+| value_expression CONCAT value_expression
+  {
+    $$ = &BinaryExpr{Left: $1, Operator: "||", Right: $3}
+  }
 | value_expression '|' value_expression
   {
     $$ = &BinaryExpr{Left: $1, Operator: BitOrStr, Right: $3}
@@ -3343,6 +3348,31 @@ convert_type:
   {
     $$ = &ConvertType{Type: string($1), Length: $2, Charset: string($3.String())}
   }
+| TEXT
+  {
+    $$ = &ConvertType{Type: string($1)}
+  }
+| INTEGER
+  {
+    $$ = &ConvertType{Type: string($1)}
+  }
+| INT
+  {
+    $$ = &ConvertType{Type: string($1)}
+  }
+| BIGINT
+  {
+    $$ = &ConvertType{Type: string($1)}
+  }
+| BOOLEAN
+  {
+    $$ = &ConvertType{Type: string($1)}
+  }
+| BOOL
+  {
+    $$ = &ConvertType{Type: string($1)}
+  }
+
 | DATE
   {
     $$ = &ConvertType{Type: string($1)}

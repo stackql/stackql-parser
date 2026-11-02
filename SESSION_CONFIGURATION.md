@@ -1,42 +1,30 @@
-# Session configuration reset
+# Session configuration syntax
 
-SET and UNSET use configuration names on the left-hand side, without a dollar prefix.
-The dollar sigil is reserved for dereferencing values. UNSET accepts one or more SQL identifiers:
-
-```sql
-UNSET "providers.production";
-UNSET "auth.example.password", "secrets.token";
-```
-
-Identifiers use StackQL's double-quote syntax. UNSET is non-reserved, so a column can still be named
-`unset`. Comments after UNSET are accepted. Values or assignments after a reset path are rejected.
-
-The parser returns the existing `*sqlparser.Set` AST. Each path becomes a SetExpr whose value is
-`*sqlparser.Default`. This is the same representation as `SET "providers.production" = DEFAULT`.
-Preview classifies both spellings as StmtSet. The host owns configuration validation, authorization,
-reset semantics and side effects; parsing executes nothing.
-
-Provider bindings and secret configurations use existing SET string literals containing JSON.
-Their object structure belongs to the host and Omni, not the SQL grammar. This keeps credentials
-out of new AST fields and lets hosts reject unsupported configuration before applying it.
-
-Run the focused regression with:
-
-```sh
-go test ./go/vt/sqlparser -run '^TestUnsetSessionConfiguration$'
-```
-
-After release, StackQL must consume the parser's new tag to accept scoped UNSET. Its existing tagged
-parser already accepts unqualified UNSET, SET SESSION and SET ... = DEFAULT. No local module replacement is part of this feature.
-
-## Optional scope
+SET and UNSET parse SQL identifiers, including a leading dollar sign. The parser records the
+identifier and optional scope; StackQL owns the distinction between variables and runtime config.
 
 ```sql
-SET SESSION "auth.example.password" = 'value';
-UNSET SESSION "auth.example.password", "providers.production";
+SET region = 'ap-southeast-2';
+SET "providers.saved" = '{"provider":"aws"}';
+SET "$.auth.example.password" = 'session-password';
+SET SESSION "$.providers.production" = '{"provider":"aws","tenancy":"production","auth":{"type":"aws_signing_v4"}}';
+UNSET region, "providers.saved";
+UNSET SESSION "$.auth.example.password", "$.providers.production";
 ```
 
-Omitting scope leaves selection to the host (StackQL uses SESSION). SET and UNSET accept SESSION
-and GLOBAL and record the chosen scope in each SetExpr. The host decides which scopes can execute;
-StackQL currently rejects GLOBAL rather than treating it as a session mutation. Principal/group
-storage, inheritance and conflict resolution are not implemented by this grammar.
+In StackQL, a dollar-prefixed assignment/reset target selects intrinsic runtime configuration
+for this session. A plain target selects a session scalar variable; dots alone do not select
+configuration. A dollar-prefixed expression dereferences a value. These are host semantics, not
+parser-managed storage. GLOBAL parses but the host currently rejects unsupported shared scopes.
+
+UNSET becomes a Set statement whose expressions use Default, matching SET name = DEFAULT.
+SET and UNSET retain the existing identifier/quoting grammar. Single-quoted '$name' is a string
+literal, not a dereference. Object-name resolution is context-sensitive host AST processing.
+
+CAST(expr AS TEXT/INTEGER/INT/BIGINT/BOOL/BOOLEAN) and corresponding CONVERT(expr, type) forms
+are accepted in addition to the existing conversion types. Both forms produce ConvertExpr.
+The || token produces BinaryExpr concatenation, distinct from OrExpr for boolean OR; it binds
+more tightly than comparisons. Formatting preserves that distinction and expression grouping.
+
+The consumer must release/pin the parser changes before relying on these conversion and
+concatenation fixes. Local development replacements must not be committed as dependency pins.
