@@ -3919,11 +3919,27 @@ exec_var:
   {
     $$ = NewExecVarDef($1, $3)
   }
+| at_id '=' TRUE
+  {
+    $$ = NewExecVarDef($1, BoolVal(true))
+  }
+| at_id '=' FALSE
+  {
+    $$ = NewExecVarDef($1, BoolVal(false))
+  }
 
 exec_payload:
   at_at_id '=' value
   {
     $$ = NewExecVarDef($1, $3)
+  }
+| at_at_id '=' TRUE
+  {
+    $$ = NewExecVarDef($1, BoolVal(true))
+  }
+| at_at_id '=' FALSE
+  {
+    $$ = NewExecVarDef($1, BoolVal(false))
   }
 
 opt_exec_payload:
